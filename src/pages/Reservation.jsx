@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { colors, fonts } from "../tokens";
 import Eyebrow from "../components/Eyebrow";
 import API from '../services/api.js'
@@ -79,12 +78,13 @@ const ReservationPage = () => {
   const [info, setInfo] = useState(null);
   const [loadingInfo, setLoadingInfo] = useState(true);
 
+
   // ── Fetch Café Info ─────────────────────────────────────────
   useEffect(() => {
     const fetchInfo = async () => {
       try {
         setLoadingInfo(true);
-        const res = await axios.get("http://localhost:5000/api/cafe-info");
+        const res = await API.get("/cafe-info");
         setInfo(res.data);
       } catch (err) {
         console.error("Failed to fetch info:", err);

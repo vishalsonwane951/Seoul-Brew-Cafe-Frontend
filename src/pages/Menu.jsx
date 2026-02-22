@@ -2,7 +2,6 @@ import { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { CartContext } from "../context/CartContext";
 import API from '../services/api'
-import API from '../services/api.js'
 
 function Menu() {
   const [menu, setMenu] = useState([]);
@@ -13,7 +12,8 @@ function Menu() {
     try {
       setLoading(true);
       setError("");
-      const res = await API.get("/menu"); // backend API
+      const res = await API.get("/menu");
+      console.log(`API: ${API}`)
       setMenu(res.data);
     } catch (err) {
       setError("Failed to load menu.");
