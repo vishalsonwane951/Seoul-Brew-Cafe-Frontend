@@ -8,7 +8,7 @@ import {
     FormHeading,
     Field,
     PrimaryBtn,
-} from "../SharedComponents";
+} from "../components/SharedComponents";
 
 /* ── Eye icons ── */
 const EyeOpen = () => (

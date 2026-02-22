@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { C, FONT_URL, KEYFRAMES } from "./constants";
+import { C, FONT_URL, KEYFRAMES } from "../constants";
 
 /* ─────────────────────────────────────────
    SEOUL BREW — Shared UI Components
