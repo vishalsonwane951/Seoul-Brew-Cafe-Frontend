@@ -192,7 +192,7 @@ export default function RegisterPage({ setPage, onLoginSuccess }) {
                 agreeToTerms:    form.agreeToTerms,
             };
 
-            const res = await API.post("http://localhost:5000/api/register", payload);
+            const res = await API.post("/register", payload);
 
             // Save token if backend returns one
             if (res.data.token) {
