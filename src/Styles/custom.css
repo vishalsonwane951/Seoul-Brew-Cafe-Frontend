@@ -1,0 +1,8 @@
+:root {
+  --bs-primary: #6f4e37;  /* Coffee Brown */
+  --bs-secondary: #d9a066;
+}
+
+body {
+  background-color: #f8f5f2;
+}

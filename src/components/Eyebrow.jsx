@@ -1,0 +1,33 @@
+import { colors, fonts, fontSizes } from "../tokens";
+
+// ─── EYEBROW ─────────────────────────────────────────────────────
+// Reusable section label: small line + uppercase text
+
+const Eyebrow = ({ text }) => (
+  <div style={{
+    display:      "flex",
+    alignItems:   "center",
+    gap:          "12px",
+    marginBottom: "20px",
+  }}>
+    {/* decorative line */}
+    <div style={{
+      width:      "32px",
+      height:     "1px",
+      background: colors.accent,
+      flexShrink: 0,
+    }} />
+    <span style={{
+      fontFamily:    fonts.sans,
+      fontSize:      fontSizes.eyebrow,
+      letterSpacing: "4px",
+      textTransform: "uppercase",
+      color:         colors.accent,
+      fontWeight:    400,
+    }}>
+      {text}
+    </span>
+  </div>
+);
+
+export default Eyebrow;
