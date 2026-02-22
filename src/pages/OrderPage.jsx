@@ -220,7 +220,7 @@ const OrderPage = () => {
 
     try {
       setLoading(true);
-      const res = await API.post("git/orders",
+      const res = await API.post("/orders",
         payload,
         {
           headers: {
