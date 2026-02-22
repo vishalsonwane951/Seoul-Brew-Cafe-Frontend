@@ -179,13 +179,16 @@ const ConfirmBanner = ({ result, onDismiss }) => (
 const ORDER_TYPES = ["Dine-In", "Takeaway", "Delivery"];
 
 const OrderPage = () => {
-  const { menu, loading, error } = useContext(MenuContext);
+  const { menu, loading: menuLoading, error } = useContext(MenuContext);
   const { cart, addToCart, changeQty, clearCart } = useContext(CartContext);
+
+  // Local state for order placement
   const [orderType, setOrderType] = useState("Dine-In");
   const [toast, setToast] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
+  const [loading, setLoading] = useState(false); // local loading
 
-  if (loading) return <div style={{ padding: "32px" }}>Loading menu…</div>;
+  if (menuLoading) return <div style={{ padding: "32px" }}>Loading menu…</div>;
   if (error) return <div style={{ padding: "32px", color: "red" }}>{error}</div>;
 
   const cartArr = Object.values(cart);
@@ -196,56 +199,63 @@ const OrderPage = () => {
     setToast(`${item.title} added to cart`);
   };
 
+  const handlePlace = async () => {
+    if (!cartArr.length) {
+      setToast("Cart is empty!");
+      return;
+    }
 
-const handlePlace = async () => {
-  if (!cartArr.length) return;
+    const payload = {
+      orderType,
+      items: cartArr.map((i) => ({
+        menuItemId: i._id,
+        title: i.title,
+        quantity: i.qty,
+        price: i.price,
+      })),
+      totalAmount: total,
+      customerName: localStorage.getItem("name") || "Guest",
+      email: localStorage.getItem("email") || "guest@example.com",
+    };
 
-  // Check if user is logged in
-  const token = localStorage.getItem("token");
-  if (!token) {
-    setToast("Please log in to place your order."); // popup/toast
-    // redirect to login page (state-based navigation)
-    return;
-  }
+    try {
+      setLoading(true);
+      const res = await API.post("git/orders",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-const payload = {
-    orderType, // "Dine-In", "Takeaway", "Delivery"
-    items: cartArr.map((i) => ({
-      menuItemId: i._id,
-      title: i.title,
-      quantity: i.qty,
-      price: i.price,
-    })),
-    totalAmount: total,
-    customerName: localStorage.getItem("name") || "Guest",
-    email: localStorage.getItem("email") || "guest@example.com",
+      setConfirmation(res.data);
+      setToast("Order placed! ☕");
+      clearCart();
+    } catch (err) {
+      console.error("Failed to place order:", err.response?.data || err.message);
+      setToast(err.response?.data?.message || "Failed to place order.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-try {
-    const res = await API.post("/orders", payload, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const result = res.data;
-    setConfirmation(result); // show confirmation banner
-    setToast("Order placed! ☕");
-    clearCart();
-  } catch (err) {
-    console.error(err);
-    setToast("Failed to place order.");
-  }
-};
-  // Poll for order status updates
+  // Poll for order status updates every 5s
   useEffect(() => {
-    if (!confirmation) return;
+    if (!confirmation?._id) return; // no order yet
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/orders/${confirmation._id}`);
-        const updated = await res.json();
-        setConfirmation(updated);
-      } catch {}
-    }, 5000); // every 5s
+        const res = await axios.get(
+          `http://localhost:5000/api/orders/${confirmation._id}`
+        );
+        setConfirmation(res.data);
+      } catch (err) {
+        console.error("Failed to update order status:", err);
+      }
+    }, 5000);
+
     return () => clearInterval(interval);
-  }, [confirmation]);
+  }, [confirmation?._id]);
 
   return (
     <div style={{ paddingTop: "72px", animation: "pageFade 0.4s ease forwards" }}>
