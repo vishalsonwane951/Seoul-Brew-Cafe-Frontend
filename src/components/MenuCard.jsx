@@ -12,6 +12,7 @@ const MenuCard = ({ item }) => {
         background: hovered ? colors.off : colors.white,
         padding: "28px 32px",
         cursor: "pointer",
+        margin:'5px',
         transition: "background 0.2s",
       }}
     >

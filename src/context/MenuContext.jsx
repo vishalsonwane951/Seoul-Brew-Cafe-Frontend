@@ -1,5 +1,4 @@
 import { createContext, useState, useEffect } from "react";
-import axios from "axios";
 import API from '../services/api'
 
 export const MenuContext = createContext();

@@ -1,52 +1,12 @@
-// import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-// import { useState, useEffect } from "react";
-
-// import Menu from "./pages/Menu";
-// import Cart from "./pages/Cart";
-// import Home from "./pages/Home";
-// import Reservation from "./pages/Reservation";
-// import Checkout from "./pages/Checkout";
-// import Navbar from "./components/Navbar";
-// import Loader from "./pages/Loader";
-
-// function App() {
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const timer = setTimeout(() => {
-//       setLoading(false);
-//     }, 2000);
-
-//     return () => clearTimeout(timer);
-//   }, []);
-
-//   if (loading) return <Loader />;
-
-//   return (
-//     <Router>
-//       <Navbar />
-
-//       <Routes>
-//         <Route path="/" element={<Home />} />
-//         <Route path="/menu" element={<Menu />} />
-//         <Route path="/cart" element={<Cart />} />
-//         <Route path="/reservation" element={<Reservation />} />
-//         <Route path="/checkout" element={<Checkout />} />
-//       </Routes>
-//     </Router>
-//   );
-// }
-
-// export default App;
-
-
-
 import { useState, useEffect } from "react";
 import { GOOGLE_FONTS_URL } from "./tokens";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 
 // ── Components ──
 import Nav    from "./components/Nav";
 import Footer from "./components/Footer";
+import LoginPage    from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
 // ── Pages ──
 import HomePage        from "./pages/Home";
@@ -54,13 +14,10 @@ import MenuPage        from "./pages/MenuPage";
 import OrderPage       from "./pages/OrderPage";
 import ReservationPage from "./pages/Reservation";
 
-// ─── APP ─────────────────────────────────────────────────────────
-// Root component: manages active page + scroll state.
-// Navigation is handled via state (no React Router required).
-
 export default function App() {
-  const [page, setPage]       = useState("home");
+  const [page, setPage]         = useState("home");
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser]         = useState(null); // ✅ store logged-in user
 
   // Track scroll for Nav shadow
   useEffect(() => {
@@ -69,18 +26,36 @@ export default function App() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
+  // Check localStorage for persisted user
+ useEffect(() => {
+  const stored = localStorage.getItem("user");
+  if (stored) {
+    setUser(JSON.parse(stored)); // ✅ ensures Nav shows profile icon on refresh
+  }
+}, []);
+
+  // Logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setPage("home");
+  };
+
   // Navigate: switch page + scroll to top
   const navigate = (p) => {
     setPage(p);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Page map
+  // Page map (state-based navigation)
   const pages = {
-    home:        <HomePage        setPage={navigate} />,
+    home:        <HomePage setPage={navigate} />,
     menu:        <MenuPage />,
     order:       <OrderPage />,
     reservation: <ReservationPage />,
+    login:       <LoginPage setPage={navigate} setUser={setUser} />,    // pass setUser
+    register:    <RegisterPage setPage={navigate} setUser={setUser} />, // pass setUser
   };
 
   return (
@@ -90,7 +65,7 @@ export default function App() {
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link href={GOOGLE_FONTS_URL} rel="stylesheet" />
 
-      {/* Base reset — minimal, no classes */}
+      {/* Base reset */}
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
@@ -105,7 +80,15 @@ export default function App() {
         input, select, textarea, button { font-family: inherit; }
       `}</style>
 
-      <Nav page={page} setPage={navigate} scrolled={scrolled} />
+      {/* Nav with logged-in user */}
+      <Nav page={page} setPage={navigate} scrolled={scrolled} user={user} onLogout={handleLogout} />
+
+      {/* <BrowserRouter>
+        <Routes>
+          <Route path="/login"    element={<LoginPage setUser={setUser} />} />
+          <Route path="/register" element={<RegisterPage setUser={setUser} />} />
+        </Routes>
+      </BrowserRouter> */}
 
       <main>
         {pages[page]}

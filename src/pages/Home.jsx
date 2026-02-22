@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { colors, fonts } from "../tokens";
 import Eyebrow from "../components/Eyebrow";
 import FeaturedCard from "../components/FeaturedCard";
@@ -96,7 +95,7 @@ const Hero = ({ setPage }) => (
     <div style={{ background: colors.surface, position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px" }}>
         <div style={{ fontSize: "6rem", animation: "floatCoffee 5s ease-in-out infinite" }}>☕</div>
-        <span style={{ fontFamily: fonts.korean, fontSize: "0.85rem", color: colors.muted, letterSpacing: "8px" }}>서울의 정신으로</span>
+        <span style={{ fontFamily: fonts.korean, fontSize: "0.85rem", color: colors.muted, letterSpacing: "8px" }}>SEOUL Brew cafe..!</span>
       </div>
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "grid", gridTemplateColumns: "repeat(3,1fr)", borderTop: `1px solid ${colors.line}` }}>
         {[["18+", "Drinks"], ["4.9★", "Rating"], ["3K+", "Guests/Mo"]].map(([num, label], i) => (
@@ -163,7 +162,6 @@ const About = () => (
 );
 
 // ─────────────────────────────────────────────────────────────────
-// 3. FEATURED FAVORITES (with Axios, no skeleton, no FeaturedCard)
 const Featured = ({ setPage }) => {
   const [menu, setMenu] = useState(null);
   const [error, setError] = useState(null);

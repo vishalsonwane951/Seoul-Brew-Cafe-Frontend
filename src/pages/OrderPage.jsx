@@ -5,7 +5,6 @@ import Toast from "../components/Toast";
 import { MenuContext } from "../context/MenuContext";
 import { CartContext } from "../context/CartContext";
 import API from '../services/api.js'
-import axios from "axios";
 
 // ── Order Row ───────────────────────────────────────────────
 const OrderRow = ({ item, onAdd }) => {
@@ -201,7 +200,15 @@ const OrderPage = () => {
 const handlePlace = async () => {
   if (!cartArr.length) return;
 
-  const payload = {
+  // Check if user is logged in
+  const token = localStorage.getItem("token");
+  if (!token) {
+    setToast("Please log in to place your order."); // popup/toast
+    // redirect to login page (state-based navigation)
+    return;
+  }
+
+const payload = {
     orderType, // "Dine-In", "Takeaway", "Delivery"
     items: cartArr.map((i) => ({
       menuItemId: i._id,
@@ -210,12 +217,14 @@ const handlePlace = async () => {
       price: i.price,
     })),
     totalAmount: total,
-    customerName: "John Doe", // replace with actual customer info
-    email: "john@example.com", // replace with actual customer info
+    customerName: localStorage.getItem("name") || "Guest",
+    email: localStorage.getItem("email") || "guest@example.com",
   };
 
-  try {
-    const res = await API.post("/orders", payload);
+try {
+    const res = await API.post("/orders", payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     const result = res.data;
     setConfirmation(result); // show confirmation banner
     setToast("Order placed! ☕");
@@ -225,7 +234,6 @@ const handlePlace = async () => {
     setToast("Failed to place order.");
   }
 };
-
   // Poll for order status updates
   useEffect(() => {
     if (!confirmation) return;
