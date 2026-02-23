@@ -3,9 +3,7 @@ import { colors, fonts } from "../tokens";
 import Eyebrow from "../components/Eyebrow";
 import FeaturedCard from "../components/FeaturedCard";
 import API from '../services/api.js';
-// import { ErrorBox } from "../components/Skeleton"; // if you want retry support
 
-// ── Shared Buttons ────────────────────────────────────────────────
 const BtnFill = ({ children, onClick }) => {
   const [h, setH] = useState(false);
   return (
@@ -58,8 +56,7 @@ const BtnOutline = ({ children, onClick }) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────
-// 1. HERO SECTION
+//  HERO SECTION
 const Hero = ({ setPage }) => (
   <section style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 1fr", paddingTop: "72px", animation: "heroFade 0.8s ease forwards" }}>
     <style>{`
@@ -88,8 +85,7 @@ const Hero = ({ setPage }) => (
         <BtnOutline onClick={() => setPage("order")}>Order Now</BtnOutline>
       </div>
       <span style={{ fontFamily: fonts.korean, fontSize: "0.75rem", color: colors.line, letterSpacing: "6px", marginTop: "40px", animation: "subtitleFade 1s ease 0.8s both" }}>
-        서울 브루 카페
-      </span>
+        CAFE      </span>
     </div>
 
     <div style={{ background: colors.surface, position: "relative", overflow: "hidden" }}>
@@ -109,15 +105,14 @@ const Hero = ({ setPage }) => (
   </section>
 );
 
-// ─────────────────────────────────────────────────────────────────
-// 2. ABOUT SECTION
+//  ABOUT SECTION
 const About = () => (
   <section style={{ background: colors.off, padding: "120px 56px" }}>
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "80px", alignItems: "center" }}>
         <div style={{ position: "relative" }}>
           <div style={{ width: "100%", aspectRatio: "4/5", background: colors.surface, border: `1px solid ${colors.line}`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
-            <span style={{ fontFamily: fonts.korean, fontSize: "4rem", color: colors.line }}>카페</span>
+            <span style={{ fontFamily: fonts.korean, fontSize: "4rem", color: colors.line }}>CAFE</span>
             <div style={{ position: "absolute", bottom: "-12px", right: "-12px", width: "80px", height: "80px", border: `1px solid ${colors.accent}`, opacity: 0.4 }} />
           </div>
           <div style={{ position: "absolute", top: "-16px", left: "-16px", width: "88px", height: "88px", borderRadius: "50%", background: colors.accent, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2px" }}>
@@ -161,7 +156,6 @@ const About = () => (
   </section>
 );
 
-// ─────────────────────────────────────────────────────────────────
 const Featured = ({ setPage }) => {
   const [menu, setMenu] = useState(null);
   const [error, setError] = useState(null);
@@ -243,8 +237,7 @@ const Featured = ({ setPage }) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────
-// 4. TESTIMONIALS
+//  TESTIMONIALS
 const TESTIMONIALS = [
   { quote: "Best coffee experience I've ever had.", author: "Priya S." },
   { quote: "Feels like a cafe straight from Seoul.", author: "Rahul K." },
@@ -275,7 +268,6 @@ const Testimonials = () => (
   </section>
 );
 
-// ─────────────────────────────────────────────────────────────────
 // HOME PAGE
 export default function HomePage({ setPage }) {
   return (

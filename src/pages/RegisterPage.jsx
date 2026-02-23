@@ -89,7 +89,7 @@ function PasswordField({ label, placeholder, value, onChange, error }) {
     );
 }
 
-/* ── Success screen ── */
+/*  Success screen  */
 function SuccessScreen({ onGoToLogin }) {
     return (
         <div style={{
@@ -125,9 +125,6 @@ function SuccessScreen({ onGoToLogin }) {
     );
 }
 
-/* ═══════════════════════════════════════════════
-   SEOUL BREW — Register Page
-═══════════════════════════════════════════════ */
 export default function RegisterPage({ setPage, onLoginSuccess }) {
     useGlobalStyles();
 
@@ -141,7 +138,7 @@ export default function RegisterPage({ setPage, onLoginSuccess }) {
         agreeToTerms: false,
     });
 
-    const [errors, setErrors]   = useState({});
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
@@ -154,7 +151,7 @@ export default function RegisterPage({ setPage, onLoginSuccess }) {
     const validate = () => {
         const errs = {};
         if (!form.firstName.trim()) errs.firstName = "Required";
-        if (!form.lastName.trim())  errs.lastName  = "Required";
+        if (!form.lastName.trim()) errs.lastName = "Required";
         if (!form.email)
             errs.email = "Email is required";
         else if (!/\S+@\S+\.\S+/.test(form.email))
@@ -183,25 +180,23 @@ export default function RegisterPage({ setPage, onLoginSuccess }) {
 
         try {
             const payload = {
-                firstName:       form.firstName,
-                lastName:        form.lastName,
-                email:           form.email,
-                phone:           form.phone,
-                password:        form.password,
+                firstName: form.firstName,
+                lastName: form.lastName,
+                email: form.email,
+                phone: form.phone,
+                password: form.password,
                 confirmPassword: form.confirmPassword,
-                agreeToTerms:    form.agreeToTerms,
+                agreeToTerms: form.agreeToTerms,
             };
 
             const res = await API.post("/register", payload);
 
-            // Save token if backend returns one
             if (res.data.token) {
                 localStorage.setItem("token", res.data.token);
             }
 
             setSuccess(true);
 
-            // Notify App so Nav shows profile icon
             if (onLoginSuccess) {
                 onLoginSuccess({
                     name: res.data.user?.firstName || form.firstName,
@@ -248,7 +243,6 @@ export default function RegisterPage({ setPage, onLoginSuccess }) {
                     subtitle="Create your account and start your coffee journey"
                 />
 
-                {/* Name row */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                     <Field
                         label="First Name"
@@ -284,7 +278,6 @@ export default function RegisterPage({ setPage, onLoginSuccess }) {
                     error={errors.phone}
                 />
 
-                {/* Password row — eye toggle on both fields */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                     <PasswordField
                         label="Password"
@@ -302,7 +295,6 @@ export default function RegisterPage({ setPage, onLoginSuccess }) {
                     />
                 </div>
 
-                {/* Terms checkbox */}
                 <div style={{ marginBottom: 18 }}>
                     <label style={{
                         display: "flex", alignItems: "flex-start", gap: 10,

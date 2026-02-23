@@ -1,6 +1,4 @@
-// ─── DESIGN TOKENS ───────────────────────────────────────────────
-// Single source of truth for all colours, typography, spacing
-
+//  DESIGN TOKENS 
 export const colors = {
   white:   "#ffffff",
   off:     "#f9f8f6",

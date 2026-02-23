@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { colors, fonts } from "../tokens";
-// import { HOURS } from "../data/menuData";
 
-// ─── FOOTER ──────────────────────────────────────────────────────
 
 const FooterLink = ({ children, onClick }) => {
   const [h, setH] = useState(false);
@@ -105,9 +103,6 @@ const Footer = ({ setPage }) => (
       <div>
         <ColHead>Hours</ColHead>
         <ul style={{ padding: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
-          {/* {HOURS.map(([day, time]) => (
-            <FooterLink key={day}>{day.split(" ")[0]}: {time.split("–")[0].trim()}</FooterLink> */}
-          {/* ))} */}
         </ul>
       </div>
 

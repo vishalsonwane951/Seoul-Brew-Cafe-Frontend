@@ -1,15 +1,11 @@
-/* ─────────────────────────────────────────
-   SEOUL BREW — Shared Design Tokens
-───────────────────────────────────────── */
-
 export const C = {
-  cream:    "#f5f0e8",
+  cream: "#f5f0e8",
   espresso: "#1a0f0a",
-  mocha:    "#3d1f0f",
-  latte:    "#c49a6c",
-  foam:     "#ede8df",
-  blush:    "#d4846a",
-  dark:     "#120a06",
+  mocha: "#3d1f0f",
+  latte: "#c49a6c",
+  foam: "#ede8df",
+  blush: "#d4846a",
+  dark: "#120a06",
 };
 
 export const FONT_URL =

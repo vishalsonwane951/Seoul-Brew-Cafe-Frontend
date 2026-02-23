@@ -3,21 +3,21 @@ import { GOOGLE_FONTS_URL } from "./tokens";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 
 // ── Components ──
-import Nav    from "./components/Nav";
+import Nav from "./components/Nav";
 import Footer from "./components/Footer";
-import LoginPage    from "./pages/LoginPage";
+import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 
 // ── Pages ──
-import HomePage        from "./pages/Home";
-import MenuPage        from "./pages/MenuPage";
-import OrderPage       from "./pages/OrderPage";
+import HomePage from "./pages/Home";
+import MenuPage from "./pages/MenuPage";
+import OrderPage from "./pages/OrderPage";
 import ReservationPage from "./pages/Reservation";
 
 export default function App() {
-  const [page, setPage]         = useState("home");
+  const [page, setPage] = useState("home");
   const [scrolled, setScrolled] = useState(false);
-  const [user, setUser]         = useState(null); // ✅ store logged-in user
+  const [user, setUser] = useState(null);
 
   // Track scroll for Nav shadow
   useEffect(() => {
@@ -27,12 +27,12 @@ export default function App() {
   }, []);
 
   // Check localStorage for persisted user
- useEffect(() => {
-  const stored = localStorage.getItem("user");
-  if (stored) {
-    setUser(JSON.parse(stored)); // ✅ ensures Nav shows profile icon on refresh
-  }
-}, []);
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      setUser(JSON.parse(stored));
+    }
+  }, []);
 
   // Logout
   const handleLogout = () => {
@@ -50,12 +50,12 @@ export default function App() {
 
   // Page map (state-based navigation)
   const pages = {
-    home:        <HomePage setPage={navigate} />,
-    menu:        <MenuPage />,
-    order:       <OrderPage />,
+    home: <HomePage setPage={navigate} />,
+    menu: <MenuPage />,
+    order: <OrderPage />,
     reservation: <ReservationPage />,
-    login:       <LoginPage setPage={navigate} setUser={setUser} />,    // pass setUser
-    register:    <RegisterPage setPage={navigate} setUser={setUser} />, // pass setUser
+    login: <LoginPage setPage={navigate} setUser={setUser} />,    // pass setUser
+    register: <RegisterPage setPage={navigate} setUser={setUser} />, // pass setUser
   };
 
   return (
@@ -82,13 +82,6 @@ export default function App() {
 
       {/* Nav with logged-in user */}
       <Nav page={page} setPage={navigate} scrolled={scrolled} user={user} onLogout={handleLogout} />
-
-      {/* <BrowserRouter>
-        <Routes>
-          <Route path="/login"    element={<LoginPage setUser={setUser} />} />
-          <Route path="/register" element={<RegisterPage setUser={setUser} />} />
-        </Routes>
-      </BrowserRouter> */}
 
       <main>
         {pages[page]}

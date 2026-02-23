@@ -66,21 +66,18 @@ const MenuPage = () => {
             The <em style={{ fontStyle: "italic", color: colors.accent }}>Menu</em>
           </h2>
 
-          {/* Tabs */}
           <div style={{ display: "flex", borderBottom: `1px solid ${colors.line}`, marginBottom: "48px" }}>
             {tabs.map((tab) => (
               <TabBtn key={tab} label={tab} count={menu[tab]?.length} active={activeTab === tab} onClick={() => setActiveTab(tab)} />
             ))}
           </div>
 
-          {/* Available Items */}
           {available.length > 0 && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "1px", background: colors.line, border: `1px solid ${colors.line}`, marginBottom: unavailable.length > 0 ? "40px" : 0 }}>
               {available.map((item) => <MenuCard key={item._id} item={item}/>)}
             </div>
           )}
 
-          {/* Unavailable Items */}
           {unavailable.length > 0 && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "0 0 16px" }}>
@@ -93,7 +90,7 @@ const MenuPage = () => {
             </>
           )}
 
-          {/* Empty */}
+          {/* If Empty */}
           {items.length === 0 && (
             <div style={{ padding: "64px", textAlign: "center", fontFamily: fonts.sans, color: colors.muted, fontSize: "0.88rem", fontStyle: "italic", border: `1px solid ${colors.line}` }}>
               No items in this category right now.

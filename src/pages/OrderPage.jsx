@@ -6,7 +6,6 @@ import { MenuContext } from "../context/MenuContext";
 import { CartContext } from "../context/CartContext";
 import API from '../services/api.js'
 
-// ── Order Row ───────────────────────────────────────────────
 const OrderRow = ({ item, onAdd }) => {
   const [hover, setHover] = useState(false);
   const [btnHover, setBtnHover] = useState(false);
@@ -62,7 +61,6 @@ const OrderRow = ({ item, onAdd }) => {
   );
 };
 
-// ── Qty Button ─────────────────────────────────────────────
 const QtyBtn = ({ children, onClick }) => {
   const [h, setH] = useState(false);
   return (
@@ -90,13 +88,13 @@ const QtyBtn = ({ children, onClick }) => {
   );
 };
 
-// ── Cart Component ─────────────────────────────────────────
 const Cart = ({ cartArr, total, orderType, onChangeQty, onPlace, placing }) => {
   const [btnHover, setBtnHover] = useState(false);
   const disabled = cartArr.length === 0 || placing;
 
   return (
     <div style={{ background: colors.white, border: `1px solid ${colors.line}`, position: "sticky", top: "84px" }}>
+      
       {/* Head */}
       <div style={{ padding: "20px 24px", borderBottom: `1px solid ${colors.line}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontFamily: fonts.serif, fontSize: "1rem", color: colors.ink }}>Your Order</span>
@@ -161,7 +159,7 @@ const Cart = ({ cartArr, total, orderType, onChangeQty, onPlace, placing }) => {
   );
 };
 
-// ── Confirmation Banner ──────────────────────────────────────
+//  Confirmation Banner 
 const ConfirmBanner = ({ result, onDismiss }) => (
   <div style={{ padding: "20px 28px", background: "#f0faf3", border: `1px solid #a8d5b5`, display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
     <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
@@ -175,14 +173,13 @@ const ConfirmBanner = ({ result, onDismiss }) => (
   </div>
 );
 
-// ── Order Page ─────────────────────────────────────────────
+//  Order Page 
 const ORDER_TYPES = ["Dine-In", "Takeaway", "Delivery"];
 
 const OrderPage = () => {
   const { menu, loading: menuLoading, error } = useContext(MenuContext);
   const { cart, addToCart, changeQty, clearCart } = useContext(CartContext);
 
-  // Local state for order placement
   const [orderType, setOrderType] = useState("Dine-In");
   const [toast, setToast] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
@@ -240,13 +237,11 @@ const OrderPage = () => {
     }
   };
 
-  // Poll for order status updates every 5s
   useEffect(() => {
-    if (!confirmation?._id) return; // no order yet
+    if (!confirmation?._id) return;
     const interval = setInterval(async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:5000/api/orders/${confirmation._id}`
+        const res = await API.get(`/orders/${confirmation._id}`
         );
         setConfirmation(res.data);
       } catch (err) {

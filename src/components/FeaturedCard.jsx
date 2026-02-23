@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const FeaturedCard = ({ item }) => {
-  const [h, setH] = useState(false); // ✅ SAFE HERE
+  const [h, setH] = useState(false); 
 
 const fonts = {
   serif: "Playfair Display, serif",

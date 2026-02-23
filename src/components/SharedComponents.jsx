@@ -1,12 +1,7 @@
 import { useState, useEffect } from "react";
 import { C, FONT_URL, KEYFRAMES } from "../constants";
 
-/* ─────────────────────────────────────────
-   SEOUL BREW — Shared UI Components
-   Used by both LoginPage and RegisterPage
-───────────────────────────────────────── */
 
-/* ── Inject fonts + keyframes once ── */
 export function useGlobalStyles() {
   useEffect(() => {
     if (document.getElementById("sb-fonts")) return;
@@ -23,7 +18,6 @@ export function useGlobalStyles() {
   }, []);
 }
 
-/* ── Coffee Cup SVG Illustration ── */
 export function CupIllustration() {
   return (
     <svg width="148" height="168" viewBox="0 0 160 180" fill="none"
@@ -54,7 +48,6 @@ export function CupIllustration() {
   );
 }
 
-/* ── Left brand panel (shared by both pages) ── */
 export function BrandPanel() {
   const beans = [
     { top: "14%",    left: "9%",   dur: "4s",   delay: "0s"   },
@@ -78,14 +71,12 @@ export function BrandPanel() {
       alignItems: "center", overflow: "hidden",
       animation: "sb-slideLeft 0.85s cubic-bezier(0.16,1,0.3,1) both",
     }}>
-      {/* Noise texture */}
       <div style={{
         position: "absolute", inset: 0, opacity: 0.04,
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
         backgroundSize: "200px",
       }} />
 
-      {/* Floating beans */}
       {beans.map((b, i) => (
         <div key={i} style={{
           position: "absolute", width: 11, height: 17, borderRadius: "50%",
@@ -95,7 +86,6 @@ export function BrandPanel() {
         }} />
       ))}
 
-      {/* Steam puffs */}
       {steams.map((s, i) => (
         <div key={i} style={{
           position: "absolute", width: s.w, height: s.h,
@@ -152,7 +142,7 @@ export function BrandPanel() {
   );
 }
 
-/* ── Form input field ── */
+/*  Form input field  */
 export function Field({ label, type = "text", placeholder, value, onChange, error }) {
   return (
     <div style={{ marginBottom: 16 }}>
@@ -188,7 +178,6 @@ export function Field({ label, type = "text", placeholder, value, onChange, erro
   );
 }
 
-/* ── Primary CTA button ── */
 export function PrimaryBtn({ children, onClick, loading }) {
   return (
     <button onClick={onClick} className="sb-btn-main" disabled={loading}
@@ -216,7 +205,6 @@ export function PrimaryBtn({ children, onClick, loading }) {
   );
 }
 
-/* ── OR divider ── */
 export function OrDivider() {
   return (
     <div style={{
@@ -231,7 +219,6 @@ export function OrDivider() {
   );
 }
 
-/* ── Google social button ── */
 export function GoogleBtn() {
   return (
     <button className="sb-social"
@@ -255,7 +242,6 @@ export function GoogleBtn() {
   );
 }
 
-/* ── Right panel wrapper ── */
 export function FormPanel({ children }) {
   return (
     <div style={{

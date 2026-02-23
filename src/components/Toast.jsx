@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { colors, fonts } from "../tokens";
 
-// ─── TOAST ───────────────────────────────────────────────────────
-// Auto-dismiss notification shown at bottom-right
+// ─── TOAST ───
 
 const Toast = ({ msg, onDone }) => {
   useEffect(() => {
@@ -12,19 +11,19 @@ const Toast = ({ msg, onDone }) => {
 
   return (
     <div style={{
-      position:    "fixed",
-      bottom:      "32px",
-      right:       "32px",
-      background:  colors.ink,
-      color:       colors.white,
-      padding:     "14px 24px",
-      zIndex:      9999,
-      fontFamily:  fonts.sans,
-      fontSize:    "0.78rem",
+      position: "fixed",
+      bottom: "32px",
+      right: "32px",
+      background: colors.ink,
+      color: colors.white,
+      padding: "14px 24px",
+      zIndex: 9999,
+      fontFamily: fonts.sans,
+      fontSize: "0.78rem",
       letterSpacing: "1px",
-      fontWeight:  300,
-      borderLeft:  `3px solid ${colors.accent}`,
-      animation:   "slideToast 0.3s ease",
+      fontWeight: 300,
+      borderLeft: `3px solid ${colors.accent}`,
+      animation: "slideToast 0.3s ease",
     }}>
       <style>{`
         @keyframes slideToast {

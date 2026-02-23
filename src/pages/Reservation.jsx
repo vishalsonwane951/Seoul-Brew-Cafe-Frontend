@@ -3,7 +3,6 @@ import { colors, fonts } from "../tokens";
 import Eyebrow from "../components/Eyebrow";
 import API from '../services/api.js'
 
-// ── Field Component ─────────────────────────────────────────────
 const Field = ({ label, children }) => (
   <div style={{ marginBottom: "20px" }}>
     <label style={{
@@ -22,7 +21,7 @@ const Field = ({ label, children }) => (
   </div>
 );
 
-// ── Input Styles ───────────────────────────────────────────────
+//  Input Styles 
 const inputStyle = (focused) => ({
   width: "100%", padding: "13px 14px",
   background: focused ? colors.white : colors.off,
@@ -35,7 +34,7 @@ const inputStyle = (focused) => ({
   boxSizing: "border-box",
 });
 
-// ── Form Inputs ────────────────────────────────────────────────
+//  Form Inputs 
 const FormInput = ({ name, type = "text", placeholder, value, onChange, required }) => {
   const [focused, setFocused] = useState(false);
   return (
@@ -70,7 +69,7 @@ const FormSelect = ({ name, value, onChange, required, children }) => {
   );
 };
 
-// ── Reservation Page ───────────────────────────────────────────
+//  Reservation Page 
 const ReservationPage = () => {
   const [form, setForm] = useState({ name: "", email: "", phone: "", date: "", time: "", guests: "2", notes: "" });
   const [done, setDone] = useState(false);
@@ -79,7 +78,7 @@ const ReservationPage = () => {
   const [loadingInfo, setLoadingInfo] = useState(true);
 
 
-  // ── Fetch Café Info ─────────────────────────────────────────
+  //  Fetch Café Info 
   useEffect(() => {
     const fetchInfo = async () => {
       try {
@@ -208,7 +207,7 @@ const ReservationPage = () => {
               )}
             </div>
 
-            {/* ── Info Column ── */}
+            {/*  Info Column  */}
             <div>
               <div style={{ border:"1px solid #ccc", padding:"14px 20px", marginBottom:"16px", background: colors.off }}>
                 <h4 style={{ fontFamily: fonts.sans, fontSize:"0.68rem", letterSpacing:"3px", textTransform:"uppercase", color: colors.muted }}>Opening Hours</h4>

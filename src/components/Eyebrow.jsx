@@ -1,7 +1,5 @@
 import { colors, fonts, fontSizes } from "../tokens";
 
-// ─── EYEBROW ─────────────────────────────────────────────────────
-// Reusable section label: small line + uppercase text
 
 const Eyebrow = ({ text }) => (
   <div style={{

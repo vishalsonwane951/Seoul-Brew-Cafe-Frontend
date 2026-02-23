@@ -13,7 +13,6 @@ import {
     GoogleBtn,
 } from "../components/SharedComponents";
 
-// ✅ Add setUser prop
 export default function LoginPage({ setUser, setPage }) {
     // ...
     const [form, setForm] = useState({ email: "", password: "" });
@@ -97,7 +96,7 @@ export default function LoginPage({ setUser, setPage }) {
 
                 <Field
                     label="Password"
-                    type={showPassword ? "text" : "password"} // toggle type
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={form.password}
                     onChange={set("password")}
