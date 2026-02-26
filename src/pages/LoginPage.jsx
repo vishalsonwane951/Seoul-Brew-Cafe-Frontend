@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../constants";
 import API from '../services/api'
+import axios from "axios";
 import {
     useGlobalStyles,
     BrandPanel,
@@ -13,7 +14,7 @@ import {
     GoogleBtn,
 } from "../components/SharedComponents";
 
-export default function LoginPage({ setUser, setPage }) {
+export default function LoginPage({ setUser }) {
     // ...
     const [form, setForm] = useState({ email: "", password: "" });
     const [errors, setErrors] = useState({});
@@ -31,6 +32,7 @@ export default function LoginPage({ setUser, setPage }) {
     };
 
     const handleSubmit = async () => {
+        
         const errs = validate();
         if (Object.keys(errs).length) { setErrors(errs); return; }
 
@@ -38,7 +40,7 @@ export default function LoginPage({ setUser, setPage }) {
         setLoading(true);
 
         try {
-            const res = await API.post("/login",
+            const res = await axios.post("http://localhost:5000/api/login",
                 { email: form.email, password: form.password }
             );
 
@@ -48,15 +50,14 @@ export default function LoginPage({ setUser, setPage }) {
                 const userData = {
                     name: res.data.name,
                     email: res.data.email,
-                    role: res.data.role,
+                    // role: res.data.role,
                 };
 
                 localStorage.setItem("token", res.data.token);
                 localStorage.setItem("user", JSON.stringify(userData));
 
-                setUser(userData);    // update App state
-                setPage("home");      // switch page via App
-                // ✅ redirect to homepage via router
+                setUser(userData);    
+                navigate('/')     
             } else {
                 setErrors({ email: res.data.message || "Invalid email or password" });
             }
@@ -68,6 +69,8 @@ export default function LoginPage({ setUser, setPage }) {
             setLoading(false);
         }
     };
+            const navigate = useNavigate()
+
     return (
         <div
             style={{
@@ -151,7 +154,7 @@ export default function LoginPage({ setUser, setPage }) {
                 >
                     Don't have an account?{" "}
                     <span
-                        onClick={() => setPage("register")}
+                        onClick={() => navigate('/register')}
                         className="sb-link"
                         style={{ color: C.blush, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}
                     >

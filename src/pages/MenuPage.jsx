@@ -42,12 +42,12 @@ const TabBtn = ({ label, count, active, onClick }) => {
 
 const MenuPage = () => {
   const { menu, loading, error, fetchMenu } = useContext(MenuContext);
-  const [activeTab, setActiveTab] = useState("coffee");
+  const [activeTab, setActiveTab] = useState("matcha");
 
-  const tabs = ["coffee", "matcha", "food"];
-  const items = Array.isArray(menu?.[activeTab]) ? menu[activeTab] : [];
-  const available = items.filter((i) => i.available !== false);
-  const unavailable = items.filter((i) => i.available === false);
+  const tabs = [...new Set(menu.map(item => item.category.toLowerCase()))]; 
+  const items = menu.filter(item => item.category.toLowerCase() === activeTab.toLowerCase());
+  const available = items.filter((i) => i.stock === true);
+  const unavailable = items.filter((i) => i.stock === false);
 
   if (loading) return <div style={{ padding: "32px" }}>Loading menu…</div>;
   if (error)
@@ -68,7 +68,7 @@ const MenuPage = () => {
 
           <div style={{ display: "flex", borderBottom: `1px solid ${colors.line}`, marginBottom: "48px" }}>
             {tabs.map((tab) => (
-              <TabBtn key={tab} label={tab} count={menu[tab]?.length} active={activeTab === tab} onClick={() => setActiveTab(tab)} />
+              <TabBtn key={tab} label={tab} count={menu.filter(item => item.category.toLowerCase() === tab).length} active={activeTab === tab} onClick={() => setActiveTab(tab)} />
             ))}
           </div>
 

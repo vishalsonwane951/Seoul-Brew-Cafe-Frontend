@@ -14,8 +14,23 @@ import MenuPage from "./pages/MenuPage";
 import OrderPage from "./pages/OrderPage";
 import ReservationPage from "./pages/Reservation";
 
-export default function App() {
-  const [page, setPage] = useState("home");
+// Admin Pages
+// import { Staff, Inventory, Analytics, Reviews, Settings } from './admin/pages/index';
+import AdminLayout from "./Admin/components/AdminLayout";
+import Overview from "./Admin/pages/Overview";
+import Orders from "./Admin/pages/Orders";
+import Menu from "./Admin/pages/Menu";
+import Reservations from "./Admin/pages/Reservations";
+import Staff from "./Admin/pages/Staff";
+import Inventory from "./Admin/pages/Inventory";
+import Analytics from "./Admin/pages/Analytics";
+import Reviews from "./Admin/pages/Reviews";
+import Settings from "./Admin/pages/Settings";
+// import { Analytics, Inventory, Reviews, Settings, Staff } from "./Admin/pages/AdminPages";
+
+// Wrapper component to use navigate inside App
+function AppContent() {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
 
@@ -34,28 +49,12 @@ export default function App() {
     }
   }, []);
 
-  // Logout
+  // Logout (LOGIC SAME)
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-    setPage("home");
-  };
-
-  // Navigate: switch page + scroll to top
-  const navigate = (p) => {
-    setPage(p);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  // Page map (state-based navigation)
-  const pages = {
-    home: <HomePage setPage={navigate} />,
-    menu: <MenuPage />,
-    order: <OrderPage />,
-    reservation: <ReservationPage />,
-    login: <LoginPage setPage={navigate} setUser={setUser} />,    // pass setUser
-    register: <RegisterPage setPage={navigate} setUser={setUser} />, // pass setUser
+    navigate("/"); // go to home
   };
 
   return (
@@ -80,13 +79,48 @@ export default function App() {
         input, select, textarea, button { font-family: inherit; }
       `}</style>
 
-      {/* Nav with logged-in user */}
-      <Nav page={page} setPage={navigate} scrolled={scrolled} user={user} onLogout={handleLogout} />
+      {/* Nav */}
+      <Nav
+        scrolled={scrolled}
+        user={user}
+        onLogout={handleLogout}
+      />
 
       <main>
-        {pages[page]}
-        <Footer setPage={navigate} />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/menu" element={<MenuPage />} />
+          <Route path="/order" element={<OrderPage />} />
+          <Route path="/reservation" element={<ReservationPage />} />
+          <Route path="/login" element={<LoginPage setUser={setUser} />}/>
+          <Route path="/register" element={<RegisterPage setUser={setUser} />}/>
+
+          {/* ── ADMIN PORTAL ── */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Overview />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="menu" element={<Menu />} />
+            <Route path="reservations" element={<Reservations />} />
+            <Route path="staff" element={<Staff />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="reviews" element={<Reviews />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+
+          <Route path="*" element={<navigate to="/" replace />} />
+        </Routes>
+
+        {/* <Footer /> */}
       </main>
     </>
   );
 }
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
+  );
+} 

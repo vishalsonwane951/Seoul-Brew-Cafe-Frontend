@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { C } from "../constants";
 import API from '../services/api'
+import axios from "axios";
 import {
     useGlobalStyles,
     BrandPanel,
@@ -9,6 +10,7 @@ import {
     Field,
     PrimaryBtn,
 } from "../components/SharedComponents";
+import { useNavigate } from "react-router-dom";
 
 /* ── Eye icons ── */
 const EyeOpen = () => (
@@ -125,7 +127,7 @@ function SuccessScreen({ onGoToLogin }) {
     );
 }
 
-export default function RegisterPage({ setPage, onLoginSuccess }) {
+export default function RegisterPage({ onLoginSuccess }) {
     useGlobalStyles();
 
     const [form, setForm] = useState({
@@ -172,9 +174,9 @@ export default function RegisterPage({ setPage, onLoginSuccess }) {
     };
 
     const handleSubmit = async () => {
+        
         const errs = validate();
         if (Object.keys(errs).length) { setErrors(errs); return; }
-
         setErrors({});
         setLoading(true);
 
@@ -189,7 +191,7 @@ export default function RegisterPage({ setPage, onLoginSuccess }) {
                 agreeToTerms: form.agreeToTerms,
             };
 
-            const res = await API.post("/register", payload);
+            const res = await axios.post("http://localhost:5000/api/register", payload);
 
             if (res.data.token) {
                 localStorage.setItem("token", res.data.token);
@@ -213,6 +215,7 @@ export default function RegisterPage({ setPage, onLoginSuccess }) {
             setLoading(false);
         }
     };
+        const navigate = useNavigate()
 
     if (success) {
         return (
@@ -223,7 +226,7 @@ export default function RegisterPage({ setPage, onLoginSuccess }) {
             }}>
                 <BrandPanel />
                 <FormPanel>
-                    <SuccessScreen onGoToLogin={() => setPage("login")} />
+                    <SuccessScreen onGoToLogin={() => navigate('/login')} />
                 </FormPanel>
             </div>
         );
@@ -340,7 +343,7 @@ export default function RegisterPage({ setPage, onLoginSuccess }) {
                 }}>
                     Already have an account?{" "}
                     <span
-                        onClick={() => setPage("login")}
+                        onClick={() => navigate('/login')}
                         className="sb-link"
                         style={{ color: C.blush, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}
                     >

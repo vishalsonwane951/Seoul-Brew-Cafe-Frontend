@@ -7,12 +7,19 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 import './Styles/custom.css';
 import { MenuProvider } from "./context/MenuContext";
 
+import { AuthProvider } from "./context/AuthContext.jsx";
+import { AppProvider } from "./Admin/context/AppContext.jsx";
+ 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <MenuProvider >
-      <CartProvider>
-        <App />
-      </CartProvider>
-    </MenuProvider>
-    </React.StrictMode>
+    <AuthProvider>
+      <MenuProvider>
+        <CartProvider>
+          <AppProvider>
+          <App />
+          </AppProvider>
+        </CartProvider>
+      </MenuProvider>
+    </AuthProvider>
+  </React.StrictMode>
 );

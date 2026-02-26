@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { colors, fonts } from "../tokens";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const NavLink = ({ label, active, onClick }) => {
   const [hovered, setHovered] = useState(false);
@@ -11,7 +12,7 @@ const NavLink = ({ label, active, onClick }) => {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        position: "relative", 
+        position: "relative",
         padding: "8px 20px",
         fontFamily: fonts.sans,
         fontSize: "0.75rem",
@@ -161,12 +162,13 @@ const ProfileIcon = ({ user, onLogout }) => {
 };
 
 
-const Nav = ({ page, setPage, scrolled, user = null, onLogout = () => { } }) => {
+const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
   const [reserveHovered, setReserveHovered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navPages = ["home", "menu", "order", "reservation"];
-
+  const navigate = useNavigate();
+  const location = useLocation();
   return (
     <>
       <style>{`
@@ -203,7 +205,7 @@ const Nav = ({ page, setPage, scrolled, user = null, onLogout = () => { } }) => 
       }}>
 
         <div
-          onClick={() => setPage("home")}
+          onClick={() => navigate('/home')}
           style={{ display: "flex", flexDirection: "column", gap: "2px", cursor: "pointer" }}
         >
           <span style={{
@@ -232,22 +234,26 @@ const Nav = ({ page, setPage, scrolled, user = null, onLogout = () => { } }) => 
           left: "50%",
           transform: "translateX(-50%)",
         }}>
-          {navPages.map((p) => (
-            <NavLink
-              key={p}
-              label={p}
-              active={page === p}
-              onClick={() => setPage(p)}
-            />
-          ))}
+          {navPages.map((p) => {
+            const path = p === "home" ? "/" : `/${p}`;
+
+            return (
+              <NavLink
+                key={p}
+                label={p}
+                active={location.pathname === path}
+                onClick={() => navigate(path)}
+              />
+            );
+          })}
         </div>
 
-        
+
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
 
           <button
             className="sb-reserve-btn"
-            onClick={() => setPage("reservation")}
+            onClick={() => navigate('/reservation ')}
             onMouseEnter={() => setReserveHovered(true)}
             onMouseLeave={() => setReserveHovered(false)}
             style={{
@@ -271,7 +277,7 @@ const Nav = ({ page, setPage, scrolled, user = null, onLogout = () => { } }) => 
             <ProfileIcon user={user} onLogout={onLogout} />
           ) : (
             <button
-              onClick={() => setPage("login")}
+              onClick={() => navigate('/login')}
               style={{
                 padding: "10px 20px",
                 background: "none",
@@ -344,30 +350,41 @@ const Nav = ({ page, setPage, scrolled, user = null, onLogout = () => { } }) => 
           padding: "16px 0 24px",
         }}
       >
-        {navPages.map((p) => (
-          <button
-            key={p}
-            onClick={() => { setPage(p); setMenuOpen(false); }}
-            style={{
-              padding: "14px 32px",
-              background: page === p ? "#faf7f3" : "none",
-              border: "none",
-              textAlign: "left",
-              fontFamily: fonts.sans,
-              fontSize: "0.78rem",
-              letterSpacing: "2px",
-              textTransform: "uppercase",
-              color: page === p ? colors.ink : colors.muted,
-              cursor: "pointer",
-            }}
-          >
-            {p}
-          </button>
-        ))}
+        {navPages.map((p) => {
+          const path = p === "home" ? "/" : `/${p}`;
+          const isActive = location.pathname === path;
+
+          return (
+            <button
+              key={p}
+              onClick={() => {
+                navigate(path);
+                setMenuOpen(false);
+              }}
+              style={{
+                padding: "14px 32px",
+                background: isActive ? "#faf7f3" : "none",
+                border: "none",
+                textAlign: "left",
+                fontFamily: fonts.sans,
+                fontSize: "0.78rem",
+                letterSpacing: "2px",
+                textTransform: "uppercase",
+                color: isActive ? colors.ink : colors.muted,
+                cursor: "pointer",
+              }}
+            >
+              {p}
+            </button>
+          );
+        })}
 
         <div style={{ borderTop: `1px solid ${colors.line || "#e8e2d9"}`, margin: "12px 0 0" }}>
           <button
-            onClick={() => { setPage("reservation"); setMenuOpen(false); }}
+            onClick={() => {
+              navigate("/reservation");   // correct route
+              setMenuOpen(false);
+            }}
             style={{
               padding: "14px 32px",
               background: "none",
@@ -387,7 +404,11 @@ const Nav = ({ page, setPage, scrolled, user = null, onLogout = () => { } }) => 
 
           {user ? (
             <button
-              onClick={() => { onLogout(); setMenuOpen(false); }}
+              onClick={() => {
+                onLogout();       
+                navigate("/");    
+                setMenuOpen(false);
+              }}
               style={{
                 padding: "14px 32px",
                 background: "none",
@@ -406,7 +427,10 @@ const Nav = ({ page, setPage, scrolled, user = null, onLogout = () => { } }) => 
             </button>
           ) : (
             <button
-              onClick={() => { setPage("login"); setMenuOpen(false); }}
+              onClick={() => {
+                navigate("/login");   // ✅ correct route
+                setMenuOpen(false);
+              }}
               style={{
                 padding: "14px 32px",
                 background: "none",

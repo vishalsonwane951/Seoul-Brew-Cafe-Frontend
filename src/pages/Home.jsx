@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react";
+  import { useState, useEffect } from "react";
 import { colors, fonts } from "../tokens";
 import Eyebrow from "../components/Eyebrow";
 import FeaturedCard from "../components/FeaturedCard";
 import API from '../services/api.js';
+import { useNavigate } from "react-router-dom";
 
 const BtnFill = ({ children, onClick }) => {
   const [h, setH] = useState(false);
   return (
     <button
       onMouseEnter={() => setH(true)}
-      onMouseLeave={() => setH(false)}
+      onMouseLeave={() => setH(false)}    
       onClick={onClick}
       style={{
         padding: "15px 40px",
@@ -57,8 +58,10 @@ const BtnOutline = ({ children, onClick }) => {
 };
 
 //  HERO SECTION
-const Hero = ({ setPage }) => (
-  <section style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 1fr", paddingTop: "72px", animation: "heroFade 0.8s ease forwards" }}>
+const Hero = ({ setPage }) => {
+  const navigate = useNavigate()
+  return (
+     <section style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 1fr", paddingTop: "72px", animation: "heroFade 0.8s ease forwards" }}>
     <style>{`
       @keyframes heroFade { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
       @keyframes floatCoffee { 0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);} }
@@ -80,9 +83,10 @@ const Hero = ({ setPage }) => (
       <p style={{ fontFamily: fonts.sans, fontSize: "1.05rem", lineHeight: 1.8, color: colors.body, maxWidth: "400px", fontWeight: 300, marginTop: "28px", animation: "subtitleFade 1s ease 0.4s both" }}>
         A Taste of Seoul in Every Sip — inspired by the slow-sip culture of Seoul's finest café alleys, where every cup is a considered ritual.
       </p>
+      
       <div style={{ display: "flex", gap: "16px", marginTop: "48px", animation: "subtitleFade 1s ease 0.6s both" }}>
-        <BtnFill onClick={() => setPage("menu")}>Explore Menu</BtnFill>
-        <BtnOutline onClick={() => setPage("order")}>Order Now</BtnOutline>
+        <BtnFill onClick={() => navigate('/menu')}>Explore Menu</BtnFill>
+        <BtnOutline onClick={() => navigate('/order')}>Order Now</BtnOutline>
       </div>
       <span style={{ fontFamily: fonts.korean, fontSize: "0.75rem", color: colors.line, letterSpacing: "6px", marginTop: "40px", animation: "subtitleFade 1s ease 0.8s both" }}>
         CAFE      </span>
@@ -103,7 +107,11 @@ const Hero = ({ setPage }) => (
       </div>
     </div>
   </section>
-);
+
+  )
+}
+  
+ 
 
 //  ABOUT SECTION
 const About = () => (
@@ -161,6 +169,8 @@ const Featured = ({ setPage }) => {
   const [error, setError] = useState(null);
   const [linkH, setLinkH] = useState(false);
 
+    const navigate = useNavigate();
+
   const fetchMenu = async () => {
     try {
       const res = await API.get("/menu");
@@ -199,31 +209,31 @@ const Featured = ({ setPage }) => {
             </h2>
           </div>
 
-          <button
-            onMouseEnter={() => setLinkH(true)}
-            onMouseLeave={() => setLinkH(false)}
-            onClick={() => setPage("menu")}
-            style={{
-              background: "none",
-              border: "none",
-              padding: 0,
-              fontFamily: fonts.sans,
-              fontSize: "0.75rem",
-              letterSpacing: "2px",
-              textTransform: "uppercase",
-              fontWeight: 400,
-              color: linkH ? colors.white : "rgba(255,255,255,0.4)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              transition: "color 0.2s",
-              marginBottom: "4px",
-            }}
-          >
-            <span>→</span> Full Menu
-          </button>
-        </div>
+            <button
+              onMouseEnter={() => setLinkH(true)}
+              onMouseLeave={() => setLinkH(false)}
+              onClick={() => navigate('/menu')}
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                fontFamily: fonts.sans,
+                fontSize: "0.75rem",
+                letterSpacing: "2px",
+                textTransform: "uppercase",
+                fontWeight: 400,
+                color: linkH ? colors.white : "rgba(255,255,255,0.4)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                transition: "color 0.2s",
+                marginBottom: "4px",
+              }}
+            >
+              <span>→</span> Full Menu
+            </button>
+          </div>
 
         {error && <div style={{ marginBottom: "24px" }}><ErrorBox message={error} onRetry={fetchMenu} /></div>}
 
@@ -279,3 +289,145 @@ export default function HomePage({ setPage }) {
     </>
   );
 }
+
+
+
+
+
+// import { useNavigate } from 'react-router-dom';
+// import { useApp } from '../Admin/context/AppContext';
+// import { T } from '../Admin/globalstyle';
+
+// const FEATURES = [
+//   { icon:'☕', title:'Specialty Coffee', desc:'Single-origin beans roasted in Seoul, brewed with precision and care.' },
+//   { icon:'🍵', title:'Jeju Matcha',       desc:'Stone-ground Jeju Island matcha, ceremonial grade and incredibly smooth.' },
+//   { icon:'🧇', title:'Korean Bites',      desc:'Red bean waffles, honey toast, and seasonal baked goods fresh daily.' },
+//   { icon:'📅', title:'Easy Reservations', desc:'Book your table in seconds, no fuss, guaranteed seating.' },
+// ];
+
+// const TESTIMONIALS = [
+//   { name:'김민지', rating:5, text:'Best dalgona latte in all of Seoul. I come here every single week!', platform:'Google' },
+//   { name:'Sarah M.', rating:5, text:'A must-visit! The red bean waffle changed my life. Seriously.', platform:'TripAdvisor' },
+//   { name:'이준호', rating:5, text:'분위기도 최고, 커피도 최고. 서울에서 가장 좋아하는 카페입니다.', platform:'Naver' },
+// ];
+
+//   export default function Home() {
+//     const navigate = useNavigate();
+//     const { menuItems } = useApp();
+//     const featured = Array.isArray(menuItems)
+//   ? menuItems.filter(m => m.available).slice(0, 4)
+//   : [];
+
+
+//   return (
+//     <div>
+//       {/* HERO */}
+//       <div style={{ background:`linear-gradient(135deg, ${T.custBrown} 0%, #5a2e12 50%, #8b5a2e 100%)`,
+//         minHeight:'88vh', display:'flex', alignItems:'center', justifyContent:'center',
+//         position:'relative', overflow:'hidden' }}>
+//         {/* Background pattern */}
+//         <div style={{ position:'absolute', inset:0, opacity:0.06,
+//           backgroundImage:`repeating-linear-gradient(45deg, ${T.custAmber} 0, ${T.custAmber} 1px, transparent 0, transparent 50%)`,
+//           backgroundSize:'30px 30px' }} />
+//         <div style={{ textAlign:'center', zIndex:1, padding:'0 20px' }}>
+//           <div style={{ fontFamily:T.mono, fontSize:'0.65rem', letterSpacing:'0.5em', color:T.custAmber, marginBottom:20, opacity:0.85 }}>WELCOME TO</div>
+//           <h1 style={{ fontFamily:T.display, fontSize:'clamp(5rem,14vw,11rem)', letterSpacing:'0.03em', color:'#f5f0e8', lineHeight:0.9, marginBottom:20 }}>
+//             Seoul<br />Brew
+//           </h1>
+//           <p style={{ fontFamily:T.serif, fontSize:'1.1rem', color:'rgba(245,240,232,0.7)', maxWidth:460, margin:'0 auto 40px', lineHeight:1.7 }}>
+//             Specialty coffee, Korean-inspired flavors, and a warm corner in Hongdae to call your own.
+//           </p>
+//           <div style={{ display:'flex', gap:14, justifyContent:'center', flexWrap:'wrap' }}>
+//             <button className="cust-btn cust-btn-amber" onClick={()=>navigate('/menu')}>Explore Menu</button>
+//             <button className="cust-btn cust-btn-outline" style={{ color:'#f5f0e8', borderColor:'rgba(245,240,232,0.5)' }} onClick={()=>navigate('/reserve')}>Reserve a Table</button>
+//           </div>
+//           <div style={{ marginTop:50, display:'flex', gap:40, justifyContent:'center', flexWrap:'wrap' }}>
+//             {[['342+','Happy Reviews'],['4.8★','Average Rating'],['5+','Years in Hongdae']].map(([v,l])=>(
+//               <div key={l} style={{ textAlign:'center' }}>
+//                 <div style={{ fontFamily:T.display, fontSize:'2.4rem', color:T.custAmber }}>{v}</div>
+//                 <div style={{ fontFamily:T.mono, fontSize:'0.55rem', color:'rgba(245,240,232,0.5)', letterSpacing:'0.15em' }}>{l}</div>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       </div>
+
+//       <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 32px' }}>
+
+//         {/* FEATURES */}
+//         <div style={{ padding:'80px 0 60px' }}>
+//           <div style={{ textAlign:'center', marginBottom:48 }}>
+//             <div style={{ fontFamily:T.mono, fontSize:'0.58rem', letterSpacing:'0.35em', color:T.custAmber, marginBottom:12 }}>WHY SEOUL BREW</div>
+//             <h2 style={{ fontFamily:T.display, fontSize:'3rem', color:T.custBrown }}>Crafted With Love</h2>
+//           </div>
+//           <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:24 }}>
+//             {FEATURES.map((f,i)=>(
+//               <div key={i} style={{ textAlign:'center', padding:'32px 20px', background:'#fff', borderRadius:16, border:`1px solid rgba(61,31,13,0.07)` }}>
+//                 <div style={{ fontSize:'2.5rem', marginBottom:16 }}>{f.icon}</div>
+//                 <div style={{ fontFamily:T.display, fontSize:'1.2rem', color:T.custBrown, marginBottom:10 }}>{f.title}</div>
+//                 <div style={{ fontSize:'0.82rem', color:'rgba(61,31,13,0.6)', lineHeight:1.65 }}>{f.desc}</div>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+
+//         {/* FEATURED MENU */}
+//         <div style={{ padding:'20px 0 70px' }}>
+//           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:36 }}>
+//             <div>
+//               <div style={{ fontFamily:T.mono, fontSize:'0.58rem', letterSpacing:'0.35em', color:T.custAmber, marginBottom:8 }}>WHAT WE MAKE</div>
+//               <h2 style={{ fontFamily:T.display, fontSize:'2.6rem', color:T.custBrown }}>Fan Favourites</h2>
+//             </div>
+//             <button className="cust-btn cust-btn-outline" onClick={()=>navigate('/menu')}>See Full Menu →</button>
+//           </div>
+//           <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:20 }}>
+//             {featured.map(item=>(
+//               <div key={item.id} className="cust-card" onClick={()=>navigate('/order')}>
+//                 <div style={{ background:`linear-gradient(135deg,${T.custBrown},#8b5a2e)`, height:160, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'3.5rem' }}>{item.img}</div>
+//                 <div style={{ padding:'16px' }}>
+//                   <div style={{ fontWeight:700, fontSize:'0.95rem', marginBottom:6 }}>{item.name}</div>
+//                   <div style={{ fontSize:'0.78rem', color:'rgba(61,31,13,0.55)', marginBottom:10, lineHeight:1.5 }}>{item.desc}</div>
+//                   <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+//                     <div style={{ fontFamily:T.mono, fontSize:'0.82rem', color:T.custAmber, fontWeight:700 }}>₹{item.price.toLocaleString()}</div>
+//                     <span className="tag tag-green">{item.category}</span>
+//                   </div>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+
+//         {/* TESTIMONIALS */}
+//         <div style={{ padding:'20px 0 80px' }}>
+//           <div style={{ textAlign:'center', marginBottom:44 }}>
+//             <div style={{ fontFamily:T.mono, fontSize:'0.58rem', letterSpacing:'0.35em', color:T.custAmber, marginBottom:10 }}>WHAT PEOPLE SAY</div>
+//             <h2 style={{ fontFamily:T.display, fontSize:'2.6rem', color:T.custBrown }}>Guest Reviews</h2>
+//           </div>
+//           <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:24 }}>
+//             {TESTIMONIALS.map((t,i)=>(
+//               <div key={i} style={{ background:'#fff', borderRadius:16, padding:28, border:`1px solid rgba(61,31,13,0.07)` }}>
+//                 <div style={{ color:T.custAmber, fontSize:'1.2rem', letterSpacing:3, marginBottom:14 }}>{'★'.repeat(t.rating)}</div>
+//                 <div style={{ fontSize:'0.85rem', lineHeight:1.7, color:'rgba(61,31,13,0.7)', marginBottom:18 }}>"{t.text}"</div>
+//                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+//                   <div style={{ fontWeight:700, fontSize:'0.88rem' }}>{t.name}</div>
+//                   <span className="tag tag-amber">{t.platform}</span>
+//                 </div>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+
+//         {/* CTA BANNER */}
+//         <div style={{ background:`linear-gradient(135deg,${T.custBrown},#5a2e12)`, borderRadius:20, padding:'60px 48px', textAlign:'center', marginBottom:80 }}>
+//           <div style={{ fontFamily:T.display, fontSize:'2.8rem', color:'#f5f0e8', marginBottom:16 }}>Visit Us in Hongdae</div>
+//           <div style={{ fontFamily:T.mono, fontSize:'0.65rem', color:'rgba(245,240,232,0.6)', letterSpacing:'0.2em', marginBottom:10 }}>서울시 마포구 홍대입구로 23, 2F</div>
+//           <div style={{ fontFamily:T.mono, fontSize:'0.6rem', color:T.custAmber, marginBottom:32 }}>Mon–Fri 08:00–22:00 · Sat–Sun 09:00–23:00</div>
+//           <div style={{ display:'flex', gap:14, justifyContent:'center' }}>
+//             <button className="cust-btn cust-btn-amber" onClick={()=>navigate('/reserve')}>Book a Table</button>
+//             <button className="cust-btn cust-btn-outline" style={{ color:'#f5f0e8', borderColor:'rgba(245,240,232,0.5)' }} onClick={()=>navigate('/order')}>Order Ahead</button>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }

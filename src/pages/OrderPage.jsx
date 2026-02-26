@@ -4,7 +4,13 @@ import Eyebrow from "../components/Eyebrow";
 import Toast from "../components/Toast";
 import { MenuContext } from "../context/MenuContext";
 import { CartContext } from "../context/CartContext";
-import API from '../services/api.js'
+import API from "../services/api.js";
+import { socket } from "../Soket.js";
+import axios from "axios";
+
+/* ===========================
+   Order Row
+=========================== */ 
 
 const OrderRow = ({ item, onAdd }) => {
   const [hover, setHover] = useState(false);
@@ -33,9 +39,11 @@ const OrderRow = ({ item, onAdd }) => {
           {item.description}
         </div>
       </div>
-      <div style={{ fontFamily: fonts.sans, fontSize: "0.88rem", fontWeight: 500, color: colors.accent, whiteSpace: "nowrap" }}>
-        ₹{item.price}
+
+      <div style={{ fontFamily: fonts.sans, fontSize: "0.88rem", fontWeight: 500, color: colors.accent }}>
+        ₹{Number(item.price) || 0}
       </div>
+
       <button
         onMouseEnter={() => setBtnHover(true)}
         onMouseLeave={() => setBtnHover(false)}
@@ -61,8 +69,13 @@ const OrderRow = ({ item, onAdd }) => {
   );
 };
 
+/* ===========================
+   Quantity Button
+=========================== */
+
 const QtyBtn = ({ children, onClick }) => {
   const [h, setH] = useState(false);
+
   return (
     <button
       onMouseEnter={() => setH(true)}
@@ -80,7 +93,6 @@ const QtyBtn = ({ children, onClick }) => {
         alignItems: "center",
         justifyContent: "center",
         transition: "all 0.15s",
-        flexShrink: 0,
       }}
     >
       {children}
@@ -88,50 +100,90 @@ const QtyBtn = ({ children, onClick }) => {
   );
 };
 
+/* ===========================
+   Cart Component
+=========================== */
+
 const Cart = ({ cartArr, total, orderType, onChangeQty, onPlace, placing }) => {
   const [btnHover, setBtnHover] = useState(false);
-  const disabled = cartArr.length === 0 || placing;
+  const disabled = !Array.isArray(cartArr) || cartArr.length === 0 || placing;
+
+  const totalQty = Array.isArray(cartArr)
+    ? cartArr.reduce((s, i) => s + (Number(i.qty) || 0), 0)
+    : 0;
 
   return (
     <div style={{ background: colors.white, border: `1px solid ${colors.line}`, position: "sticky", top: "84px" }}>
-      
+
       {/* Head */}
       <div style={{ padding: "20px 24px", borderBottom: `1px solid ${colors.line}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontFamily: fonts.serif, fontSize: "1rem", color: colors.ink }}>Your Order</span>
-        {cartArr.length > 0 && (
+        <span style={{ fontFamily: fonts.serif, fontSize: "1rem", color: colors.ink }}>
+          Your Order
+        </span>
+
+        {totalQty > 0 && (
           <div style={{ width: "22px", height: "22px", background: colors.ink, color: colors.white, borderRadius: "50%", fontSize: "0.7rem", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: fonts.sans }}>
-            {cartArr.reduce((s, i) => s + i.qty, 0)}
+            {totalQty}
           </div>
         )}
       </div>
 
       {/* Body */}
       <div style={{ padding: "20px 24px" }}>
-        {cartArr.length === 0 ? (
+        {totalQty === 0 ? (
           <div style={{ textAlign: "center", padding: "32px 0", fontFamily: fonts.sans, fontSize: "0.85rem", color: colors.muted, fontStyle: "italic", fontWeight: 300 }}>
             Nothing added yet.<br />Pick something delicious.
           </div>
         ) : (
-          cartArr.map((item) => (
-            <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: `1px solid ${colors.line}` }}>
-              <span style={{ fontFamily: fonts.sans, fontSize: "0.83rem", color: colors.body, fontWeight: 300, flex: 1, marginRight: "8px" }}>{item.title}</span>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <QtyBtn onClick={() => onChangeQty(item.id, -1)}>−</QtyBtn>
-                <span style={{ fontFamily: fonts.sans, fontSize: "0.82rem", color: colors.body, minWidth: "16px", textAlign: "center" }}>{item.qty}</span>
-                <QtyBtn onClick={() => onChangeQty(item.id, 1)}>+</QtyBtn>
-                <span style={{ fontFamily: fonts.sans, fontSize: "0.82rem", color: colors.accent, minWidth: "52px", textAlign: "right" }}>₹{item.price * item.qty}</span>
+          cartArr.map((item) => {
+            const safeQty = Number(item.qty) || 0;
+            const safePrice = Number(item.price) || 0;
+
+            return (
+              <div
+                key={item._id}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "10px 0",
+                  borderBottom: `1px solid ${colors.line}`,
+                }}
+              >
+                <span style={{ fontFamily: fonts.sans, fontSize: "0.83rem", color: colors.body, fontWeight: 300, flex: 1, marginRight: "8px" }}>
+                  {item.title}
+                </span>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <QtyBtn onClick={() => onChangeQty(item._id, -1)}>−</QtyBtn>
+
+                  <span style={{ fontFamily: fonts.sans, fontSize: "0.82rem", color: colors.body, minWidth: "16px", textAlign: "center" }}>
+                    {safeQty}
+                  </span>
+
+                  <QtyBtn onClick={() => onChangeQty(item._id, 1)}>+</QtyBtn>
+
+                  <span style={{ fontFamily: fonts.sans, fontSize: "0.82rem", color: colors.accent, minWidth: "52px", textAlign: "right" }}>
+                    ₹{safePrice * safeQty}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
       {/* Footer */}
       <div style={{ padding: "16px 24px", borderTop: `1px solid ${colors.line}` }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "16px" }}>
-          <span style={{ fontFamily: fonts.sans, fontSize: "0.7rem", letterSpacing: "2px", textTransform: "uppercase", color: colors.muted }}>Total</span>
-          <span style={{ fontFamily: fonts.serif, fontSize: "1.3rem", color: colors.ink }}>₹{total}</span>
+          <span style={{ fontFamily: fonts.sans, fontSize: "0.7rem", letterSpacing: "2px", textTransform: "uppercase", color: colors.muted }}>
+            Total
+          </span>
+          <span style={{ fontFamily: fonts.serif, fontSize: "1.3rem", color: colors.ink }}>
+            ₹{Number(total) || 0}
+          </span>
         </div>
+
         <button
           disabled={disabled}
           onMouseEnter={() => setBtnHover(true)}
@@ -159,37 +211,30 @@ const Cart = ({ cartArr, total, orderType, onChangeQty, onPlace, placing }) => {
   );
 };
 
-//  Confirmation Banner 
-const ConfirmBanner = ({ result, onDismiss }) => (
-  <div style={{ padding: "20px 28px", background: "#f0faf3", border: `1px solid #a8d5b5`, display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
-    <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-      <span style={{ fontSize: "1.3rem" }}>✓</span>
-      <div>
-        <div style={{ fontFamily: fonts.sans, fontSize: "0.88rem", color: "#1a6b35", fontWeight: 500 }}>Order {result.id}  Placed!</div>
-        <div style={{ fontFamily: fonts.sans, fontSize: "0.8rem", color: "#3a8a55", fontWeight: 300, marginTop: "2px" }}>Status: {result.status}</div>
-      </div>
-    </div>
-    <button onClick={onDismiss} style={{ background: "none", border: "none", color: "#3a8a55", cursor: "pointer", fontSize: "1.2rem", lineHeight: 1 }}>×</button>
-  </div>
-);
+/* ===========================
+   Order Page
+=========================== */
 
-//  Order Page 
+
 const ORDER_TYPES = ["Dine-In", "Takeaway", "Delivery"];
 
 const OrderPage = () => {
   const { menu, loading: menuLoading, error } = useContext(MenuContext);
   const { cart, addToCart, changeQty, clearCart } = useContext(CartContext);
 
+const [currentOrderId, setCurrentOrderId] = useState(null);
+const [currentStatus, setCurrentStatus] = useState(null);
   const [orderType, setOrderType] = useState("Dine-In");
   const [toast, setToast] = useState(null);
-  const [confirmation, setConfirmation] = useState(null);
-  const [loading, setLoading] = useState(false); // local loading
-
-  if (menuLoading) return <div style={{ padding: "32px" }}>Loading menu…</div>;
-  if (error) return <div style={{ padding: "32px", color: "red" }}>{error}</div>;
+  const [loading, setLoading] = useState(false);
 
   const cartArr = Object.values(cart);
-  const total = cartArr.reduce((s, i) => s + i.price * i.qty, 0);
+
+  const total = cartArr.reduce((s, i) => {
+    const price = Number(i.price) || 0;
+    const qty = Number(i.qty) || 0;
+    return s + price * qty;
+  }, 0);
 
   const handleAdd = (item) => {
     addToCart(item);
@@ -197,120 +242,200 @@ const OrderPage = () => {
   };
 
   const handlePlace = async () => {
-    if (!cartArr.length) {
-      setToast("Cart is empty!");
-      return;
-    }
 
-    const payload = {
-      orderType,
-      items: cartArr.map((i) => ({
-        menuItemId: i._id,
-        title: i.title,
-        quantity: i.qty,
-        price: i.price,
-      })),
-      totalAmount: total,
-      customerName: localStorage.getItem("name") || "Guest",
-      email: localStorage.getItem("email") || "guest@example.com",
-    };
+  /* ✅ CHECK LOGIN */
+  const token = localStorage.getItem("token");
 
-    try {
-      setLoading(true);
-      const res = await API.post("/orders",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  if (!token) {
+    setToast("Please login to place order");
+    return;
+  }
 
-      setConfirmation(res.data);
-      setToast("Order placed! ☕");
-      clearCart();
-    } catch (err) {
-      console.error("Failed to place order:", err.response?.data || err.message);
-      setToast(err.response?.data?.message || "Failed to place order.");
-    } finally {
-      setLoading(false);
-    }
+  if (!cartArr.length) {
+    setToast("Cart is empty!");
+    return;
+  }
+
+  const payload = {
+    orderType,
+    items: cartArr.map((i) => ({
+      menuItemId: i._id,
+      title: i.title,
+      name:localStorage.getItem('name'),
+      email: localStorage.getItem("email"),
+      quantity: Number(i.qty) || 0,
+      price: Number(i.price) || 0,
+    })),
+    total: total,
   };
 
-  useEffect(() => {
-    if (!confirmation?._id) return;
-    const interval = setInterval(async () => {
-      try {
-        const res = await API.get(`/orders/${confirmation._id}`
-        );
-        setConfirmation(res.data);
-      } catch (err) {
-        console.error("Failed to update order status:", err);
-      }
-    }, 5000);
+  console.log("cartArr:", cartArr);
+console.log("items:", payload.items);
+console.log("totalAmount:", payload.totalAmount);
 
-    return () => clearInterval(interval);
-  }, [confirmation?._id]);
+  try {
+
+    setLoading(true);
+
+    const res = await axios.post("http://localhost:5000/api/orders", payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    /* ✅ SAVE CURRENT ORDER */
+    setCurrentOrderId(res.data._id);
+    setCurrentStatus(res.data.status);
+
+    /* ✅ SAVE FOR PROFILE PAGE */
+    localStorage.setItem("currentOrderId", res.data._id);
+
+    setToast("Order placed! ☕");
+
+    clearCart();
+
+  } catch (err) {
+
+    if (err.response?.status === 401) {
+      setToast("Session expired. Please login again.");
+    } else {
+      setToast("Failed to place order.");
+    }
+
+  } finally {
+    setLoading(false);
+  }
+
+};
+
+ useEffect(() => {
+
+  const orderId = localStorage.getItem("currentOrderId");
+  const token = localStorage.getItem("token");
+
+  if (!orderId || !token) return;
+
+  // Fetch order with auth header
+  axios.get(`http://localhost:5000/api/orders/${orderId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  .then(res => {
+    setOrder(res.data);
+  })
+  .catch(err => {
+    console.error("Error fetching order:", err.response?.data || err.message);
+  });
+
+  // Listen for socket updates
+  socket.on("orderStatusUpdated", (data) => {
+
+    if (data.id === orderId) {
+
+      setOrder(prev => ({
+        ...prev,
+        status: data.status,
+        statusTimestamps: data.statusTimestamps
+      }));
+
+    }
+
+  });
+
+  return () => socket.off("orderStatusUpdated");
+
+}, []);
+
+  if (menuLoading) return <div style={{ padding: "32px" }}>Loading menu…</div>;
+  if (error) return <div style={{ padding: "32px", color: "red" }}>{error}</div>;
+
+  // Group menu items by category if menu is an array
+  const groupedMenu = Array.isArray(menu)
+    ? menu.reduce((acc, item) => {
+        const cat = item.category || "Other";
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(item);
+        return acc;
+      }, {})
+    : menu;
 
   return (
-    <div style={{ paddingTop: "72px", animation: "pageFade 0.4s ease forwards" }}>
+    <div style={{ paddingTop: "72px" }}>
       <section style={{ background: colors.off, padding: "60px 56px 120px" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <Eyebrow text="Quick Order" />
-          <h2 style={{ fontFamily: fonts.serif, fontSize: "clamp(2rem,3.5vw,3rem)", fontWeight: 400, color: colors.ink, lineHeight: 1.15, margin: "0 0 32px 0" }}>
+          <h2
+            style={{
+              fontFamily: fonts.serif,
+              fontSize: "clamp(2rem,3.5vw,3rem)",
+              fontWeight: 400,
+              color: colors.ink,
+            }}
+          >
             Order <em style={{ fontStyle: "italic", color: colors.accent }}>Online</em>
           </h2>
 
-          {confirmation && <ConfirmBanner result={confirmation} onDismiss={() => setConfirmation(null)} />}
-
-          {/* Order type */}
-          <div style={{ display: "flex", border: `1px solid ${colors.line}`, width: "fit-content", marginBottom: "32px" }}>
-            {ORDER_TYPES.map((t) => (
-              <button key={t} onClick={() => setOrderType(t)} style={{
-                padding: "11px 24px",
-                background: orderType === t ? colors.ink : colors.white,
-                color: orderType === t ? colors.white : colors.muted,
-                border: "none",
-                cursor: "pointer",
-              }}>{t}</button>
+          {/* Order Type Buttons */}
+          <div style={{ margin: "24px 0" }}>
+            {ORDER_TYPES.map((type) => (
+              <button
+                key={type}
+                onClick={() => setOrderType(type)}
+                style={{
+                  marginRight: "12px",
+                  padding: "6px 16px",
+                  border: orderType === type ? `2px solid ${colors.accent}` : `1px solid ${colors.line}`,
+                  background: "white",
+                  cursor: "pointer",
+                  fontFamily: fonts.sans,
+                  fontSize: "0.85rem",
+                }}
+              >
+                {type}
+              </button>
             ))}
           </div>
 
-          {/* 2-column layout */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: "48px", alignItems: "start" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: "48px" }}>
+            {/* Menu Items */}
             <div>
-              {Object.keys(menu).map((category) => {
-                const items = menu[category]?.filter((i) => i.available !== false) || [];
-                if (items.length === 0) return null;
+              {Object.keys(groupedMenu).map((category) => {
+                const items = groupedMenu[category]?.filter((i) => i.available !== false) || [];
+                if (!items.length) return null;
 
                 return (
                   <div key={category} style={{ marginBottom: "40px" }}>
-                    <h3 style={{
-                      fontFamily: fonts.sans,
-                      fontSize: "0.9rem",
-                      textTransform: "uppercase",
-                      letterSpacing: "1.5px",
-                      color: colors.ink,
-                      marginBottom: "16px"
-                    }}>
+                    <h3
+                      style={{
+                        fontFamily: fonts.serif,
+                        fontSize: "1rem",
+                        color: colors.ink,
+                        marginBottom: "12px",
+                      }}
+                    >
                       {category}
                     </h3>
-                    {items.map((item) => <OrderRow key={item._id} item={item} onAdd={handleAdd} />)}
+                    {items.map((item) => (
+                      <OrderRow key={item._id} item={item} onAdd={handleAdd} />
+                    ))}
                   </div>
                 );
               })}
             </div>
 
+            {/* Cart */}
             <Cart
               cartArr={cartArr}
               total={total}
               orderType={orderType}
               onChangeQty={changeQty}
               onPlace={handlePlace}
-              placing={false}
+              placing={loading}
             />
           </div>
 
+          {/* Toast/Confirmation */}
           {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
         </div>
       </section>
