@@ -23,6 +23,8 @@ export const AuthProvider = ({ children }) => {
     setLoading(false); // auth context is now ready
   }, []);
 
+
+
   // Login function
   const login = ({ userData, token }) => {
     setUser(userData);
@@ -43,6 +45,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
   };
+
+  
 
   return (
     <AuthContext.Provider value={{ user, token, role, login, logout, loading }}>

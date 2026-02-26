@@ -63,7 +63,7 @@ export default function Orders() {
       return;
     }
     try {
-      const res = await axios.patch(`/orders/${id}/advance`,{},
+      const res = await API.patch(`/orders/${id}/advance`,{},
         {
           headers: {
             Authorization: `Bearer ${token}`,

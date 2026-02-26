@@ -2,9 +2,15 @@ import { useState } from "react";
 import { colors, fonts } from "../tokens";
 import { useNavigate, useLocation } from "react-router-dom";
 
+
+
 const NavLink = ({ label, active, onClick }) => {
   const [hovered, setHovered] = useState(false);
   const isActive = active || hovered;
+
+  const location = useLocation();
+const isAdmin = location.pathname.startsWith('/admin');
+if (isAdmin) return null;
 
   return (
     <button
@@ -46,6 +52,7 @@ const NavLink = ({ label, active, onClick }) => {
 // PROFILE ICON 
 const ProfileIcon = ({ user, onLogout }) => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div style={{ position: "relative" }}>
@@ -107,6 +114,7 @@ const ProfileIcon = ({ user, onLogout }) => {
             boxShadow: "0 8px 24px rgba(0,0,0,0.10)",
             animation: "navDropFade 0.18s ease",
           }}>
+
             {/* User name */}
             {user?.name && (
               <div style={{
@@ -119,6 +127,34 @@ const ProfileIcon = ({ user, onLogout }) => {
               }}>
                 {user.name}
               </div>
+            )}
+
+            {/* Admin Panel — only for admin users */}
+            {user?.admin === true && (
+              <button
+                onClick={() => { navigate('/admin'); setOpen(false); }}
+                style={{
+                  width: "100%",
+                  padding: "12px 18px",
+                  background: "none",
+                  border: "none",
+                  borderBottom: `1px solid ${colors.line || "#e8e2d9"}`,
+                  textAlign: "left",
+                  fontFamily: fonts.sans,
+                  fontSize: "0.75rem",
+                  letterSpacing: "1.5px",
+                  textTransform: "uppercase",
+                  color: colors.accent,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#faf7f3"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "none"}
+              >
+                ⚙️ Admin Panel
+              </button>
             )}
 
             {/* Logout */}
@@ -253,7 +289,7 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
 
           <button
             className="sb-reserve-btn"
-            onClick={() => navigate('/reservation ')}
+            onClick={() => navigate('/reservation')}
             onMouseEnter={() => setReserveHovered(true)}
             onMouseLeave={() => setReserveHovered(false)}
             style={{
@@ -380,9 +416,32 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
         })}
 
         <div style={{ borderTop: `1px solid ${colors.line || "#e8e2d9"}`, margin: "12px 0 0" }}>
+
+          {/* Admin Panel link in mobile menu */}
+          {user?.admin === true && (
+            <button
+              onClick={() => { navigate('/admin'); setMenuOpen(false); }}
+              style={{
+                padding: "14px 32px",
+                background: "none",
+                border: "none",
+                textAlign: "left",
+                fontFamily: fonts.sans,
+                fontSize: "0.78rem",
+                letterSpacing: "2px",
+                textTransform: "uppercase",
+                color: colors.accent,
+                cursor: "pointer",
+                width: "100%",
+              }}
+            >
+              ⚙️ Admin Panel
+            </button>
+          )}
+
           <button
             onClick={() => {
-              navigate("/reservation");   // correct route
+              navigate("/reservation");
               setMenuOpen(false);
             }}
             style={{
@@ -405,8 +464,8 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
           {user ? (
             <button
               onClick={() => {
-                onLogout();       
-                navigate("/");    
+                onLogout();
+                navigate("/");
                 setMenuOpen(false);
               }}
               style={{
@@ -428,7 +487,7 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
           ) : (
             <button
               onClick={() => {
-                navigate("/login");   // ✅ correct route
+                navigate("/login");
                 setMenuOpen(false);
               }}
               style={{

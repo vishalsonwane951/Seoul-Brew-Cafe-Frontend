@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { GOOGLE_FONTS_URL } from "./tokens";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 
 // ── Components ──
 import Nav from "./components/Nav";
@@ -15,7 +15,6 @@ import OrderPage from "./pages/OrderPage";
 import ReservationPage from "./pages/Reservation";
 
 // Admin Pages
-// import { Staff, Inventory, Analytics, Reviews, Settings } from './admin/pages/index';
 import AdminLayout from "./Admin/components/AdminLayout";
 import Overview from "./Admin/pages/Overview";
 import Orders from "./Admin/pages/Orders";
@@ -26,11 +25,37 @@ import Inventory from "./Admin/pages/Inventory";
 import Analytics from "./Admin/pages/Analytics";
 import Reviews from "./Admin/pages/Reviews";
 import Settings from "./Admin/pages/Settings";
-// import { Analytics, Inventory, Reviews, Settings, Staff } from "./Admin/pages/AdminPages";
 
-// Wrapper component to use navigate inside App
+// ── Admin guard — blocks non-admin users from /admin routes ──────────────────
+function ProtectedRoute({ children }) {
+  const stored = localStorage.getItem('user');
+  const user = stored ? JSON.parse(stored) : null;
+
+  if (!user || user.admin !== true) {
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', minHeight: '100vh', background: '#0e0e0e',
+        gap: 12
+      }}>
+        <div style={{ fontSize: '2.5rem' }}>🚫</div>
+        <h2 style={{ color: '#fff', fontFamily: 'Outfit, sans-serif' }}>Access Denied</h2>
+        <p style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Outfit, sans-serif' }}>
+          You don't have permission to view this page.
+        </p>
+        <a href="/login" style={{ color: '#b5894a', fontFamily: 'Outfit, sans-serif', marginTop: 8 }}>
+          Go to Login
+        </a>
+      </div>
+    );
+  }
+
+  return children;
+}
+
 function AppContent() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
 
@@ -44,18 +69,20 @@ function AppContent() {
   // Check localStorage for persisted user
   useEffect(() => {
     const stored = localStorage.getItem("user");
-    if (stored) {
-      setUser(JSON.parse(stored));
-    }
+    if (stored) setUser(JSON.parse(stored));
   }, []);
 
-  // Logout (LOGIC SAME)
+  // Logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-    navigate("/"); // go to home
+    navigate("/");
   };
+
+  // Hide Nav & Footer for admin users or on /admin routes
+  const isAdmin = user?.admin === true && location.pathname.startsWith('/admin');
+  const showLayout = !isAdmin;
 
   return (
     <>
@@ -79,12 +106,10 @@ function AppContent() {
         input, select, textarea, button { font-family: inherit; }
       `}</style>
 
-      {/* Nav */}
-      <Nav
-        scrolled={scrolled}
-        user={user}
-        onLogout={handleLogout}
-      />
+      {/* Nav — only for regular users */}
+      {showLayout && (
+        <Nav scrolled={scrolled} user={user} onLogout={handleLogout} />
+      )}
 
       <main>
         <Routes>
@@ -92,11 +117,11 @@ function AppContent() {
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/order" element={<OrderPage />} />
           <Route path="/reservation" element={<ReservationPage />} />
-          <Route path="/login" element={<LoginPage setUser={setUser} />}/>
-          <Route path="/register" element={<RegisterPage setUser={setUser} />}/>
+          <Route path="/login" element={<LoginPage setUser={setUser} />} />
+          <Route path="/register" element={<RegisterPage setUser={setUser} />} />
 
           {/* ── ADMIN PORTAL ── */}
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
             <Route index element={<Overview />} />
             <Route path="orders" element={<Orders />} />
             <Route path="menu" element={<Menu />} />
@@ -110,9 +135,10 @@ function AppContent() {
 
           <Route path="*" element={<navigate to="/" replace />} />
         </Routes>
-
-        {/* <Footer /> */}
       </main>
+
+      {/* Footer — only for regular users */}
+      {showLayout && <Footer />}
     </>
   );
 }
@@ -123,4 +149,4 @@ export default function App() {
       <AppContent />
     </BrowserRouter>
   );
-} 
+}

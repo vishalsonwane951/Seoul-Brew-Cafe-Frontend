@@ -50,11 +50,13 @@ export default function LoginPage({ setUser }) {
                 const userData = {
                     name: res.data.name,
                     email: res.data.email,
-                    // role: res.data.role,
+                    admin: res.data.admin,
                 };
 
                 localStorage.setItem("token", res.data.token);
                 localStorage.setItem("user", JSON.stringify(userData));
+                navigate(res.data.admin === true ? '/admin' : '/');
+
 
                 setUser(userData);    
                 navigate('/')     
