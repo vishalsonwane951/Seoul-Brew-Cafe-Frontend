@@ -10,7 +10,7 @@ import axios from "axios";
 
 /* ===========================
    Order Row
-=========================== */ 
+=========================== */
 
 const OrderRow = ({ item, onAdd }) => {
   const [hover, setHover] = useState(false);
@@ -222,8 +222,8 @@ const OrderPage = () => {
   const { menu, loading: menuLoading, error } = useContext(MenuContext);
   const { cart, addToCart, changeQty, clearCart } = useContext(CartContext);
 
-const [currentOrderId, setCurrentOrderId] = useState(null);
-const [currentStatus, setCurrentStatus] = useState(null);
+  const [currentOrderId, setCurrentOrderId] = useState(null);
+  const [currentStatus, setCurrentStatus] = useState(null);
   const [orderType, setOrderType] = useState("Dine-In");
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -243,109 +243,109 @@ const [currentStatus, setCurrentStatus] = useState(null);
 
   const handlePlace = async () => {
 
-  /* ✅ CHECK LOGIN */
-  const token = localStorage.getItem("token");
+    /* ✅ CHECK LOGIN */
+    const token = localStorage.getItem("token");
 
-  if (!token) {
-    setToast("Please login to place order");
-    return;
-  }
+    if (!token) {
+      setToast("Please login to place order");
+      return;
+    }
 
-  if (!cartArr.length) {
-    setToast("Cart is empty!");
-    return;
-  }
+    if (!cartArr.length) {
+      setToast("Cart is empty!");
+      return;
+    }
 
-  const payload = {
-    orderType,
-    items: cartArr.map((i) => ({
-      menuItemId: i._id,
-      title: i.title,
-      name:localStorage.getItem('name'),
-      email: localStorage.getItem("email"),
-      quantity: Number(i.qty) || 0,
-      price: Number(i.price) || 0,
-    })),
-    total: total,
+    const payload = {
+      orderType,
+      items: cartArr.map((i) => ({
+        menuItemId: i._id,
+        title: i.title,
+        name: localStorage.getItem('name'),
+        email: localStorage.getItem("email"),
+        quantity: Number(i.qty) || 0,
+        price: Number(i.price) || 0,
+      })),
+      total: total,
+    };
+
+    console.log("cartArr:", cartArr);
+    console.log("items:", payload.items);
+    console.log("totalAmount:", payload.totalAmount);
+
+    try {
+
+      setLoading(true);
+
+      const res = await API.post("/orders", payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      /* ✅ SAVE CURRENT ORDER */
+      setCurrentOrderId(res.data._id);
+      setCurrentStatus(res.data.status);
+
+      /* ✅ SAVE FOR PROFILE PAGE */
+      localStorage.setItem("currentOrderId", res.data._id);
+
+      setToast("Order placed! ☕");
+
+      clearCart();
+
+    } catch (err) {
+
+      if (err.response?.status === 401) {
+        setToast("Session expired. Please login again.");
+      } else {
+        setToast("Failed to place order.");
+      }
+
+    } finally {
+      setLoading(false);
+    }
+
   };
 
-  console.log("cartArr:", cartArr);
-console.log("items:", payload.items);
-console.log("totalAmount:", payload.totalAmount);
+  useEffect(() => {
 
-  try {
+    const orderId = localStorage.getItem("currentOrderId");
+    const token = localStorage.getItem("token");
 
-    setLoading(true);
+    if (!orderId || !token) return;
 
-    const res = await axios.post("http://localhost:5000/api/orders", payload, {
+    // Fetch order with auth header
+    API.get(`/orders/${orderId}`, {
       headers: {
-        Authorization: `Bearer ${token}`,
-      },
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => {
+        setOrder(res.data);
+      })
+      .catch(err => {
+        console.error("Error fetching order:", err.response?.data || err.message);
+      });
+
+    // Listen for socket updates
+    socket.on("orderStatusUpdated", (data) => {
+
+      if (data.id === orderId) {
+
+        setOrder(prev => ({
+          ...prev,
+          status: data.status,
+          statusTimestamps: data.statusTimestamps
+        }));
+
+      }
+
     });
 
-    /* ✅ SAVE CURRENT ORDER */
-    setCurrentOrderId(res.data._id);
-    setCurrentStatus(res.data.status);
+    return () => socket.off("orderStatusUpdated");
 
-    /* ✅ SAVE FOR PROFILE PAGE */
-    localStorage.setItem("currentOrderId", res.data._id);
-
-    setToast("Order placed! ☕");
-
-    clearCart();
-
-  } catch (err) {
-
-    if (err.response?.status === 401) {
-      setToast("Session expired. Please login again.");
-    } else {
-      setToast("Failed to place order.");
-    }
-
-  } finally {
-    setLoading(false);
-  }
-
-};
-
- useEffect(() => {
-
-  const orderId = localStorage.getItem("currentOrderId");
-  const token = localStorage.getItem("token");
-
-  if (!orderId || !token) return;
-
-  // Fetch order with auth header
-  axios.get(`http://localhost:5000/api/orders/${orderId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  })
-  .then(res => {
-    setOrder(res.data);
-  })
-  .catch(err => {
-    console.error("Error fetching order:", err.response?.data || err.message);
-  });
-
-  // Listen for socket updates
-  socket.on("orderStatusUpdated", (data) => {
-
-    if (data.id === orderId) {
-
-      setOrder(prev => ({
-        ...prev,
-        status: data.status,
-        statusTimestamps: data.statusTimestamps
-      }));
-
-    }
-
-  });
-
-  return () => socket.off("orderStatusUpdated");
-
-}, []);
+  }, []);
 
   if (menuLoading) return <div style={{ padding: "32px" }}>Loading menu…</div>;
   if (error) return <div style={{ padding: "32px", color: "red" }}>{error}</div>;
@@ -353,11 +353,11 @@ console.log("totalAmount:", payload.totalAmount);
   // Group menu items by category if menu is an array
   const groupedMenu = Array.isArray(menu)
     ? menu.reduce((acc, item) => {
-        const cat = item.category || "Other";
-        if (!acc[cat]) acc[cat] = [];
-        acc[cat].push(item);
-        return acc;
-      }, {})
+      const cat = item.category || "Other";
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(item);
+      return acc;
+    }, {})
     : menu;
 
   return (

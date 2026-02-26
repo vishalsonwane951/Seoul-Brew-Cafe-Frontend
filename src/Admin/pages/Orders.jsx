@@ -27,7 +27,7 @@ export default function Orders() {
 
   const fetchOrders = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/orders", {
+      const res = await API.get("/orders", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setOrders(res.data);
@@ -62,9 +62,7 @@ export default function Orders() {
       return;
     }
     try {
-      const res = await axios.patch(
-        `http://localhost:5000/api/orders/${id}/advance`,
-        {},
+      const res = await axios.patch(`/orders/${id}/advance`,{},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -102,7 +100,7 @@ export default function Orders() {
     if (!id) return showToast("Cannot cancel: invalid order ID");
     if (!window.confirm('Are you sure you want to cancel this order?')) return;
     try {
-      const res = await axios.patch(`http://localhost:5000/api/orders/${id}/cancel`, {}, {
+      const res = await API.patch(`/orders/${id}/cancel`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOrders(prev => prev.map(o => o._id !== id ? o : res.data));

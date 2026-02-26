@@ -191,7 +191,7 @@ export default function RegisterPage({ onLoginSuccess }) {
                 agreeToTerms: form.agreeToTerms,
             };
 
-            const res = await axios.post("http://localhost:5000/api/register", payload);
+            const res = await API.post("/register", payload);
 
             if (res.data.token) {
                 localStorage.setItem("token", res.data.token);

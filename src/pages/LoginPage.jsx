@@ -40,7 +40,7 @@ export default function LoginPage({ setUser }) {
         setLoading(true);
 
         try {
-            const res = await axios.post("http://localhost:5000/api/login",
+            const res = await API.post("/login",
                 { email: form.email, password: form.password }
             );
 

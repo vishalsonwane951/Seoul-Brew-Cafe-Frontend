@@ -5,7 +5,7 @@ const API = axios.create({
 });
 
 export const getMenu = async () => {
-  const res = await api.get("/menu");
+  const res = await API.get("/menu");
   return res.data;
 };
 

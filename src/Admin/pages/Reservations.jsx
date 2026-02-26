@@ -38,8 +38,7 @@ export default function Reservations() {
       const token = localStorage.getItem("token");
       if (!token) { showToast("Not authorized!"); return; }
 
-      const res = await fetch(`http://localhost:5000/api/${id}/status`, {
-        method: 'PUT',
+      const res = await API.put(`/${id}/status`, {
         headers: {
           'Content-Type':'application/json',
           Authorization: `Bearer ${token}`
@@ -63,8 +62,7 @@ export default function Reservations() {
       const token = localStorage.getItem("token");
       if (!token) { showToast("Not authorized!"); return; }
 
-      const res = await fetch(`http://localhost:5000/api/reservations/${id}`, {
-        method: 'DELETE',
+      const res = await API.delete(`/reservations/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

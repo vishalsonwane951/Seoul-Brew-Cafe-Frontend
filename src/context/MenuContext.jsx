@@ -11,7 +11,7 @@ export const MenuProvider = ({ children }) => {
     const fetchMenu = async () => {
       try {
         setLoading(true);
-        const res = await API.get("http://localhost:5000/api/menu");
+        const res = await API.get("/menu");
         setMenu(res.data);
         setError("");
       } catch (err) {

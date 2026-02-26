@@ -60,8 +60,7 @@ export default function Menu() {
         }
 
         try {
-            const res = await axios.post(
-                'http://localhost:5000/api/menu',
+            const res = await API.post('/menu',
                 {
                     title: form.name,
                     category: form.category,
@@ -114,8 +113,7 @@ export default function Menu() {
                 return;
             }
 
-            const res = await axios.put(
-                `http://localhost:5000/api/menu/${editItem._id}`,
+            const res = await API.put(`/menu/${editItem._id}`,
                 {
                     title: editItem.title,
                     category: editItem.category,
@@ -159,7 +157,7 @@ export default function Menu() {
     // Delete menu item via API
     const del = async (id) => {
         try {
-            await axios.delete(`http://localhost:5000/api/menu/${id}`, {
+            await API.delete(`/menu/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -197,9 +195,7 @@ export default function Menu() {
         );
 
         try {
-            const res = await axios.patch(
-                `http://localhost:5000/api/menu/${itemId}/availability`,
-                {},
+            const res = await API.patch(`/menu/${itemId}/availability`,{},
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
 

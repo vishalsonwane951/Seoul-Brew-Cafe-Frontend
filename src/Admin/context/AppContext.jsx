@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
+import API from '../../services/api';
 
 const AppContext = createContext({});
 export const useApp = () => useContext(AppContext);
@@ -38,7 +39,7 @@ export function AppProvider({ children }) {
 
   const fetchMenu = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/menu", {
+      const res = await API.get("/menu", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -79,7 +80,7 @@ export function AppProvider({ children }) {
 
 const fetchReservations = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/api/reservations");
+    const res = await API.get("/reservations");
 
       setReservations(res.data);
     
@@ -94,10 +95,7 @@ useEffect(() => {
 
 const createReservation = async (formData) => {
   try {
-    const res = await axios.post(
-      "http://localhost:5000/api/reservations",
-      formData
-    );
+    const res = await API.post("/reservations",formData);
 
       setReservations(prev => [
         res.data.reservation,
