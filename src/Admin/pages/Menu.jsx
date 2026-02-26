@@ -5,6 +5,7 @@ import { Panel, StatCard, StatsGrid, Btn, Badge, Toggle, Tbl, Td } from '../comp
 import { Modal, FormGroup, inputStyle, selectStyle, textareaStyle } from '../components/SharedUI';
 import { useContext } from 'react';
 import { MenuContext } from '../../context/MenuContext';
+import API from '../../services/api';
 const CATS = ['coffee','matcha','tea','latte', 'food','bakery'];
 
 export default function Menu() {

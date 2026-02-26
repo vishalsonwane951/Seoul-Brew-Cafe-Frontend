@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { Panel, StatCard, StatsGrid, Btn, Badge, Tbl, Td } from '../components/AdminUI';
 import { Modal, FormGroup, inputStyle, selectStyle, textareaStyle } from '../components/SharedUI';
 import { T } from '../globalstyle';
+import API from '../../services/api';
 
 const TABLES = ['T-01','T-02','T-03','T-04','T-05','T-06','T-07','T-08','T-09','T-10'];
 const TABLE_COLORS = {

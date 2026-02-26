@@ -5,6 +5,7 @@ import { Modal, inputStyle,selectStyle } from '../components/SharedUI';
 import { T } from '../globalstyle';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import API from '../../services/api';
 
 const STATUS_NEXT = { Accepted: 'Preparing', Preparing: 'Ready', Ready: 'Served', 'Out for Delivery': 'Delivered', 'Picked Up': 'Done' };
 const BADGE_TYPE = { Accepted: 'wait', Preparing: 'prep', Ready: 'ready', Served: 'done', Cancelled: 'cancelled', 'Out for Delivery': 'prep', 'Picked Up': 'ready' };
