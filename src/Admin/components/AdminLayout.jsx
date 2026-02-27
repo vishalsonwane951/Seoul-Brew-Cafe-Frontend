@@ -2,6 +2,8 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Toast } from '../components/SharedUI';
 import { T, GLOBAL_CSS } from '../globalstyle';
+import { useContext } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const NAV = [
   {
@@ -40,6 +42,7 @@ const PAGE_CFG = {
 };
 
 export default function AdminLayout() {
+  const { user } = useAuth()
   const { orders, reservations, toast } = useApp();
   const location = useLocation();
   const cfg = PAGE_CFG[location.pathname] || PAGE_CFG['/admin'];
@@ -48,6 +51,7 @@ export default function AdminLayout() {
   const safeReservations = Array.isArray(reservations)
     ? reservations
     : [];
+    console.log(`user: ${user}`)
 
   // ✅ BADGES (Now cannot crash)
   const badges = {
@@ -61,7 +65,6 @@ export default function AdminLayout() {
 
     reviews: 3,
   };
-
 
   return (
     <>
@@ -120,19 +123,38 @@ export default function AdminLayout() {
             <a href="/" className="portal-btn" style={{ background: 'rgba(245,240,232,0.08)', color: T.adminCream, border: `1px solid rgba(245,240,232,0.15)` }}>CUSTOMER ↗</a>
           </div>
 
-          <div style={{ padding: '14px 22px', borderTop: `1px solid ${T.adminBorder}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: '50%', background: T.adminAmber,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: T.display, fontSize: '1rem', color: T.adminBg, flexShrink: 0
-              }}>J</div>
-              <div>
-                <div style={{ fontSize: '0.8rem' }}>Jiyeon Park</div>
-                <div style={{ fontFamily: T.mono, fontSize: '0.48rem', color: T.adminAmber }}>MANAGER</div>
-              </div>
-            </div>
-          </div>
+         <div style={{ padding: '14px 22px', borderTop: `1px solid ${T.adminBorder}` }}>
+  {user?.name && (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{
+        width: 32,
+        height: 32,
+        borderRadius: '50%',
+        background: T.adminAmber,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: T.display,
+        fontSize: '1rem',
+        color: T.adminBg,
+        flexShrink: 0
+      }}>
+        {user.name.charAt(0)}
+      </div>
+
+      <div>
+        <div style={{ fontSize: '0.8rem' }}>{user.name || '?'}</div>
+        <div style={{
+          fontFamily: T.mono,
+          fontSize: '0.48rem',
+          color: T.adminAmber
+        }}>
+          ADMIN
+        </div>
+      </div>
+    </div>
+  )}
+</div>
         </aside>
 
         {/* MAIN CONTENT */}
