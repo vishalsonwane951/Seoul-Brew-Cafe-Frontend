@@ -164,7 +164,9 @@ export default function AdminLayout() {
             borderBottom: `1px solid ${T.adminBorder}`, background: 'rgba(26,15,10,0.92)', backdropFilter: 'blur(10px)',
             position: 'sticky', top: 0, zIndex: 50
           }}>
-            <div style={{ fontFamily: T.display, fontSize: '1.55rem', letterSpacing: '0.05em' }}>{cfg.title}</div>
+            {user?. name && (
+              <div style={{ fontFamily: T.display, fontSize: '1.55rem', letterSpacing: '0.05em' }}>Welcome - {user.name}</div>
+            )}
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: T.adminAmber }} className="pulse-dot" />
               <span style={{ fontFamily: T.mono, fontSize: '0.58rem', color: 'rgba(245,240,232,0.35)' }}>

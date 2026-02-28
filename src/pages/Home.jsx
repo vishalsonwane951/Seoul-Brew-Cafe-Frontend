@@ -72,12 +72,12 @@ const Hero = ({ setPage }) => {
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "32px", animation: "subtitleFade 1s ease 0.2s both" }}>
         <div style={{ width: "40px", height: "1px", background: colors.accent }} />
         <span style={{ fontFamily: fonts.sans, fontSize: "0.7rem", letterSpacing: "4px", textTransform: "uppercase", color: colors.accent, fontWeight: 400 }}>
-          Est. 2019 · Koregaon Park, Pune
+          Sihgad Law College, Pune
         </span>
       </div>
       <h1 style={{ fontFamily: fonts.serif, fontSize: "clamp(3rem, 5.5vw, 6rem)", fontWeight: 700, lineHeight: 0.95, color: colors.ink, letterSpacing: "-2px", margin: 0, animation: "heroFade 1s ease 0.1s both" }}>
-        Seoul<br />
-        <em style={{ fontStyle: "italic", fontWeight: 400, color: colors.accent }}>Brew</em>
+        Good<br />
+        <em style={{ fontStyle: "italic", fontWeight: 400, color: colors.accent }}>Luck</em>
         <span style={{ display: "block", fontFamily: fonts.sans, fontSize: "0.18em", fontStyle: "normal", fontWeight: 300, color: colors.muted, letterSpacing: "8px", textTransform: "uppercase", marginTop: "12px" }}>Cafe</span>
       </h1>
       <p style={{ fontFamily: fonts.sans, fontSize: "1.05rem", lineHeight: 1.8, color: colors.body, maxWidth: "400px", fontWeight: 300, marginTop: "28px", animation: "subtitleFade 1s ease 0.4s both" }}>
