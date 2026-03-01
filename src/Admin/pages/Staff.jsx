@@ -771,7 +771,7 @@ export default function Staff() {
                     height: '100%',
                     objectFit: 'cover',
                     borderRadius: '50%',
-                  }}
+                  }}  
                 />
               ) : (
                 profileStaff.initial ||
