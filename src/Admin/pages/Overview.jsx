@@ -2,16 +2,16 @@ import { useApp } from '../context/AppContext';
 import { Panel, StatCard, StatsGrid, Badge, Tbl, Td, BarChart, ProgressBar } from '../components/AdminUI';
 
 const weekData = [
-  {label:'MON',label2:'₹320K',val:320},{label:'TUE',label2:'₹410K',val:410},
-  {label:'WED',label2:'₹390K',val:390},{label:'THU',label2:'₹460K',val:460},
-  {label:'FRI',label2:'₹550K',val:550},{label:'SAT',label2:'₹620K',val:620,highlight:true},
-  {label:'SUN',label2:'₹482K',val:482},
+  {label:'MON',label2:'₹ 0',val:0},{label:'TUE',label2:'₹ 0',val:0},
+  {label:'WED',label2:'₹ 0',val:0},{label:'THU',label2:'₹ 0',val:0},
+  {label:'FRI',label2:'₹ 0',val:0},{label:'SAT',label2:'₹ 0',val:0,highlight:true},
+  {label:'SUN',label2:'₹ 0',val:0},
 ];
 
 const topItems = [
-  {name:'Dalgona Latte',sold:142,pct:90},{name:'Jeju Matcha',sold:118,pct:75},
-  {name:'Seoul Cold Brew',sold:97,pct:62},{name:'Red Bean Waffle',sold:85,pct:54},
-  {name:'Honey Toast',sold:73,pct:46},
+  {name:'Dalgona Latte',sold:0,pct:0},{name:'Jeju Matcha',sold:0,pct:0},
+  {name:'Seoul Cold Brew',sold:0,pct:0},{name:'Red Bean Waffle',sold:0,pct:0},
+  {name:'Honey Toast',sold:0,pct:0},
 ];
 
 export default function Overview() {
@@ -19,10 +19,10 @@ export default function Overview() {
   return (
     <div className="fade-up">
       <StatsGrid>
-        <StatCard label="Today's Revenue" value="₹482K" change="↑ 14% vs yesterday" changeType="up" />
-        <StatCard label="Orders Today"    value="87"    change="↑ 9 more than avg"  changeType="up" />
-        <StatCard label="Avg Order Value" value="₹5.5K" change="↓ 3% vs last week"  changeType="down" />
-        <StatCard label="Tables Occupied" value="6/10"  change="60% capacity"        changeType="neutral" />
+        <StatCard label="Today's Revenue" value="₹ -" change="↑ 14% vs yesterday" changeType="up" />
+        <StatCard label="Orders Today"    value="  -"    change="↑ 9 more than avg"  changeType="up" />
+        <StatCard label="Avg Order Value" value="₹  -" change="↓ 3% vs last week"  changeType="down" />
+        <StatCard label="Tables Occupied" value="- /10"  change="60% capacity"        changeType="neutral" />
       </StatsGrid>
 
       <Panel title="Weekly Revenue">

@@ -1,21 +1,37 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useApp } from '../context/AppContext';
 import { Panel, StatCard, StatsGrid, Btn, Badge, Toggle, Tbl, Td } from '../components/AdminUI';
 import { Modal, FormGroup, inputStyle, selectStyle, textareaStyle } from '../components/SharedUI';
 import { useContext } from 'react';
 import { MenuContext } from '../../context/MenuContext';
 import API from '../../services/api';
-const CATS = ['coffee','matcha','tea','latte', 'food','bakery'];
+
+const CATS = ['coffee', 'matcha', 'tea', 'latte', 'food', 'bakery'];
 
 export default function Menu() {
-
     const { showToast, user } = useApp();
-    const { menu, setMenu } = useContext(MenuContext)
+    const { menu, setMenu, fetchMenu } = useContext(MenuContext);
     const [catFilter, setCatFilter] = useState('all');
     const [addOpen, setAddOpen] = useState(false);
     const [editItem, setEditItem] = useState(null);
-    const [form, setForm] = useState({ name: '', category: 'Coffee', price: '', desc: '', allergens: '' });
+    const [inventory, setInventory] = useState([]);
+    const [form, setForm] = useState({
+        name: '',
+        category: 'coffee',
+        price: '',
+        desc: '',
+        allergens: '',
+        imageUrl: '☕',
+        recipe: [],
+    });
+    const token = user?.token || localStorage.getItem('token');
+
+    useEffect(() => {
+        if (!token) return;
+        API.get('/inventory', { headers: { Authorization: `Bearer ${token}` } })
+            .then((res) => setInventory(res.data || []))
+            .catch(() => {});
+    }, [token]);
 
     // Fetch menu items from API on mount
     // useEffect(() => {
@@ -60,42 +76,32 @@ export default function Menu() {
             return;
         }
 
+        const recipe = (form.recipe || [])
+            .filter((r) => r.inventoryItemId && Number(r.quantityPerServing) > 0)
+            .map((r) => ({ inventoryItemId: r.inventoryItemId, quantityPerServing: Number(r.quantityPerServing) }));
+
         try {
-            const res = await API.post('/menu',
+            const res = await API.post(
+                '/menu',
                 {
                     title: form.name,
                     category: form.category,
                     price: Number(form.price),
                     description: form.desc,
                     allergens: form.allergens,
-                    imageUrl: form.img || '☕',
+                    imageUrl: form.imageUrl || '☕',
                     available: true,
-                    kcal: form.kcal || 0
+                    kcal: form.kcal || 0,
+                    recipe,
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
             const newItem = res.data;
-            setMenu(prev => [
-                ...prev,
-                {
-                    _id: newItem._id,
-                    title: newItem.title,
-                    category: newItem.category,
-                    price: newItem.price,
-                    description: newItem.description,
-                    allergens: newItem.allergens,
-                    available: newItem.available,
-                    sales: newItem.sales,
-                    stock: newItem.stock,
-                    imageUrl: newItem.imageUrl,
-                    kcal: newItem.kcal
-                }
-            ]);
-
+            setMenu((prev) => [...prev, { ...newItem }]);
             showToast('Menu item added!');
             setAddOpen(false);
-            setForm({ name: '', category: 'Coffee', price: '', desc: '', allergens: '' });
+            setForm({ name: '', category: 'coffee', price: '', desc: '', allergens: '', imageUrl: '☕', recipe: [] });
 
         } catch (err) {
             console.error(err);
@@ -114,38 +120,29 @@ export default function Menu() {
                 return;
             }
 
-            const res = await API.put(`/menu/${editItem._id}`,
+            const recipe = (editItem.recipe || [])
+                .filter((r) => r.inventoryItemId && Number(r.quantityPerServing) > 0)
+                .map((r) => ({ inventoryItemId: r.inventoryItemId, quantityPerServing: Number(r.quantityPerServing) }));
+
+            const res = await API.put(
+                `/menu/${editItem._id}`,
                 {
                     title: editItem.title,
                     category: editItem.category,
                     price: Number(editItem.price),
                     description: editItem.description,
                     allergens: editItem.allergens,
-                    imageUrl: editItem.imageUrl || "☕",
+                    imageUrl: editItem.imageUrl || '☕',
                     kcal: editItem.kcal || 0,
-                    available: editItem.available
+                    available: editItem.available,
+                    recipe,
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
+                { headers: { Authorization: `Bearer ${token}` } }
             );
 
             const updated = res.data;
-
-            // update frontend state
-            setMenu(prev =>
-                prev.map(m =>
-                    m._id !== updated._id
-                        ? m
-                        : {
-                            ...m,
-                            ...updated
-                        }
-                )
-            );
-
+            setMenu((prev) => prev.map((m) => (m._id !== updated._id ? m : { ...m, ...updated })));
+            fetchMenu();
             showToast(`Item "${updated.title}" updated!`);
             setEditItem(null);
 
@@ -162,8 +159,8 @@ export default function Menu() {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            setMenu(prev => prev.filter(item => item._id !== id));
-
+            setMenu((prev) => prev.filter((item) => item._id !== id));
+            fetchMenu();
             showToast("Item deleted");
 
         } catch (err) {
@@ -172,8 +169,6 @@ export default function Menu() {
         }
     };
 
-
-    const token = localStorage.getItem('token')
 
     // Toggle availability via API
     const toggl = async (itemId) => {
@@ -257,7 +252,7 @@ export default function Menu() {
                 <Tbl headers={['', 'Name', 'Category', 'Price', 'Sales', 'Stock', 'Available', 'Actions']}>
                     {filtered.map(m => (
                         <tr key={m._id || m.id}>
-                            <Td><span style={{ fontSize: '1.2rem' }}>{m.img}</span></Td>
+                            <Td><span style={{ fontSize: '1.2rem' }}>{m.imageUrl || m.img || '☕'}</span></Td>
                             <Td bold>{m.title}</Td>
                             <Td mono>{m.category}</Td>
                             <Td amber>₹{m.price.toLocaleString()}</Td>
@@ -303,11 +298,46 @@ export default function Menu() {
             <Modal title="Add Menu Item" open={addOpen} onClose={() => setAddOpen(false)}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                     <FormGroup label="Item Name *"><input style={inputStyle()} value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Boba Matcha" /></FormGroup>
-                    <FormGroup label="Category"><select style={selectStyle()} value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>{CATS.map(c => <option key={c}>{c}</option>)}</select></FormGroup>
+                    <FormGroup label="Category"><select style={selectStyle()} value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>{CATS.map(c => <option key={c} value={c}>{c}</option>)}</select></FormGroup>
                     <FormGroup label="Price (₹) *"><input style={inputStyle()} type="number" value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} placeholder="5500" /></FormGroup>
                     <FormGroup label="Allergens"><input style={inputStyle()} value={form.allergens} onChange={e => setForm(p => ({ ...p, allergens: e.target.value }))} placeholder="Milk, Gluten…" /></FormGroup>
+                    <FormGroup label="Icon (emoji)"><input style={inputStyle()} value={form.imageUrl} onChange={e => setForm(p => ({ ...p, imageUrl: e.target.value || '☕' }))} placeholder="☕" /></FormGroup>
                 </div>
                 <FormGroup label="Description"><textarea style={textareaStyle()} value={form.desc} onChange={e => setForm(p => ({ ...p, desc: e.target.value }))} placeholder="Describe the item…" /></FormGroup>
+                <FormGroup label="Ingredients (track stock per order)">
+                    <p style={{ fontSize: '0.7rem', color: 'rgba(245,240,232,0.5)', marginBottom: 8 }}>Link to inventory: stock is deducted when orders are placed.</p>
+                    {(form.recipe || []).map((r, idx) => (
+                        <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
+                            <select
+                                style={{ ...selectStyle(), flex: 1 }}
+                                value={r.inventoryItemId || ''}
+                                onChange={e => setForm(p => ({
+                                    ...p,
+                                    recipe: p.recipe.map((x, i) => i === idx ? { ...x, inventoryItemId: e.target.value } : x),
+                                }))}
+                            >
+                                <option value="">Select ingredient</option>
+                                {inventory.map((inv) => (
+                                    <option key={inv._id} value={inv._id}>{inv.name} ({inv.detail})</option>
+                                ))}
+                            </select>
+                            <input
+                                style={{ ...inputStyle(), width: 80 }}
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                placeholder="Qty/serve"
+                                value={r.quantityPerServing ?? ''}
+                                onChange={e => setForm(p => ({
+                                    ...p,
+                                    recipe: p.recipe.map((x, i) => i === idx ? { ...x, quantityPerServing: e.target.value } : x),
+                                }))}
+                            />
+                            <Btn variant="ghost" size="sm" onClick={() => setForm(p => ({ ...p, recipe: p.recipe.filter((_, i) => i !== idx) }))}>Remove</Btn>
+                        </div>
+                    ))}
+                    <Btn variant="ghost" size="sm" onClick={() => setForm(p => ({ ...p, recipe: [...(p.recipe || []), { inventoryItemId: '', quantityPerServing: '' }] }))}>+ Add ingredient</Btn>
+                </FormGroup>
                 <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
                     <Btn variant="ghost" onClick={() => setAddOpen(false)}>Cancel</Btn>
                     <Btn variant="primary" onClick={handleAdd}>Add Item</Btn>
@@ -339,7 +369,7 @@ export default function Menu() {
                                 }
                             >
                                 {CATS.map(c => (
-                                    <option key={c}>{c}</option>
+                                    <option key={c} value={c}>{c}</option>
                                 ))}
                             </select>
                         </FormGroup>
@@ -366,7 +396,6 @@ export default function Menu() {
                             />
                         </FormGroup>
 
-                        {/* NEW DESCRIPTION FIELD */}
                         <FormGroup label="Description">
                             <textarea
                                 style={{ ...inputStyle(), resize: "vertical", minHeight: 60 }}
@@ -377,8 +406,44 @@ export default function Menu() {
                                 placeholder="Enter item description"
                             />
                         </FormGroup>
-
+                        <FormGroup label="Icon (emoji)">
+                            <input style={inputStyle()} value={editItem.imageUrl || '☕'} onChange={e => setEditItem(p => ({ ...p, imageUrl: e.target.value || '☕' }))} />
+                        </FormGroup>
                     </div>
+                    <FormGroup label="Ingredients (track stock per order)">
+                        <p style={{ fontSize: '0.7rem', color: 'rgba(245,240,232,0.5)', marginBottom: 8 }}>Stock is deducted from inventory when orders are placed.</p>
+                        {(editItem.recipe || []).map((r, idx) => (
+                            <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
+                                <select
+                                    style={{ ...selectStyle(), flex: 1 }}
+                                    value={(r.inventoryItemId && r.inventoryItemId._id ? r.inventoryItemId._id : r.inventoryItemId) || ''}
+                                    onChange={e => setEditItem(p => ({
+                                        ...p,
+                                        recipe: (p.recipe || []).map((x, i) => i === idx ? { ...x, inventoryItemId: e.target.value } : x),
+                                    }))}
+                                >
+                                    <option value="">Select ingredient</option>
+                                    {inventory.map((inv) => (
+                                        <option key={inv._id} value={inv._id}>{inv.name} ({inv.detail})</option>
+                                    ))}
+                                </select>
+                                <input
+                                    style={{ ...inputStyle(), width: 80 }}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="Qty/serve"
+                                    value={r.quantityPerServing ?? ''}
+                                    onChange={e => setEditItem(p => ({
+                                        ...p,
+                                        recipe: (p.recipe || []).map((x, i) => i === idx ? { ...x, quantityPerServing: e.target.value } : x),
+                                    }))}
+                                />
+                                <Btn variant="ghost" size="sm" onClick={() => setEditItem(p => ({ ...p, recipe: (p.recipe || []).filter((_, i) => i !== idx) }))}>Remove</Btn>
+                            </div>
+                        ))}
+                        <Btn variant="ghost" size="sm" onClick={() => setEditItem(p => ({ ...p, recipe: [...(p.recipe || []), { inventoryItemId: '', quantityPerServing: '' }] }))}>+ Add ingredient</Btn>
+                    </FormGroup>
 
                     <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
                         <Btn variant="ghost" onClick={() => setEditItem(null)}>Cancel</Btn>

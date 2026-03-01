@@ -7,7 +7,7 @@ import { T } from '../globalstyle';
 const INITIAL_REVIEWS = [
   {
     id: 1,
-    author: '김민지 (Kim Minji)',
+    author: 'Kim Minji',
     stars: 5,
     platform: 'Google',
     date: 'Feb 22',
@@ -17,11 +17,11 @@ const INITIAL_REVIEWS = [
   },
   {
     id: 2,
-    author: '이준호 (Lee Junho)',
+    author: 'Lee Junho',
     stars: 5,
     platform: 'Naver',
     date: 'Feb 21',
-    text: '방문할 때마다 항상 기분이 좋아지는 카페예요. 바리스타분들이 너무 친절하고 커피 퀄리티도 최상급입니다. 특히 제주 말차 라떼 강추!',
+    text: '',
     reply: null,
     needsReply: true,
   },
@@ -35,20 +35,11 @@ const INITIAL_REVIEWS = [
     reply: "Thank you so much for visiting! We're thrilled the red bean waffle won your heart. Hope to see you again on your next Seoul visit! ☕",
     needsReply: false,
   },
-  {
-    id: 4,
-    author: '박수아 (Park Sooa)',
-    stars: 3,
-    platform: 'Kakao',
-    date: 'Feb 19',
-    text: '커피는 맛있는데 주말에는 웨이팅이 너무 길어요. 예약 시스템이 있으면 좋겠어요. 음식은 항상 훌륭합니다!',
-    reply: null,
-    needsReply: true,
-  },
+  
   {
     id: 5,
-    author: '최동현 (Choi Donghyun)',
-    stars: 5,
+    author: 'Choi Donghyun',
+    stars: 3,
     platform: 'Google',
     date: 'Feb 18',
     text: "My go-to work cafe. The cold brew is phenomenal and the wifi is solid. Staff remember my order after just 2 visits — that personal touch is rare in Seoul.",

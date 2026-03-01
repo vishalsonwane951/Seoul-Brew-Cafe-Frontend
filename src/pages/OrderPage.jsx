@@ -15,6 +15,7 @@ import axios from "axios";
 const OrderRow = ({ item, onAdd }) => {
   const [hover, setHover] = useState(false);
   const [btnHover, setBtnHover] = useState(false);
+  const outOfStock = item.stock === false || item.available === false;
 
   return (
     <div
@@ -29,11 +30,17 @@ const OrderRow = ({ item, onAdd }) => {
         border: `1px solid ${hover ? colors.ink : colors.line}`,
         transition: "border-color 0.2s",
         marginBottom: "8px",
+        opacity: outOfStock ? 0.65 : 1,
       }}
     >
       <div style={{ flex: 1 }}>
         <div style={{ fontFamily: fonts.serif, fontSize: "0.95rem", color: colors.ink, marginBottom: "3px" }}>
           {item.title}
+          {outOfStock && (
+            <span style={{ fontFamily: fonts.sans, fontSize: "0.65rem", color: colors.muted, marginLeft: 8, textTransform: "uppercase", letterSpacing: "1px" }}>
+              Out of stock
+            </span>
+          )}
         </div>
         <div style={{ fontFamily: fonts.sans, fontSize: "0.78rem", color: colors.muted, fontWeight: 300 }}>
           {item.description}
@@ -44,27 +51,31 @@ const OrderRow = ({ item, onAdd }) => {
         ₹{Number(item.price) || 0}
       </div>
 
-      <button
-        onMouseEnter={() => setBtnHover(true)}
-        onMouseLeave={() => setBtnHover(false)}
-        onClick={() => onAdd(item)}
-        style={{
-          width: "34px",
-          height: "34px",
-          border: `1px solid ${btnHover ? colors.ink : colors.line}`,
-          background: "none",
-          color: btnHover ? colors.ink : colors.muted,
-          fontSize: "1.1rem",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "all 0.2s",
-          flexShrink: 0,
-        }}
-      >
-        +
-      </button>
+      {outOfStock ? (
+        <span style={{ width: "34px", fontSize: "0.65rem", color: colors.muted, textAlign: "center" }}>—</span>
+      ) : (
+        <button
+          onMouseEnter={() => setBtnHover(true)}
+          onMouseLeave={() => setBtnHover(false)}
+          onClick={() => onAdd(item)}
+          style={{
+            width: "34px",
+            height: "34px",
+            border: `1px solid ${btnHover ? colors.ink : colors.line}`,
+            background: "none",
+            color: btnHover ? colors.ink : colors.muted,
+            fontSize: "1.1rem",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "all 0.2s",
+            flexShrink: 0,
+          }}
+        >
+          +
+        </button>
+      )}
     </div>
   );
 };
