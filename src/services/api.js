@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'https://seoul-brew-cafe-backend-9d3v.onrender.com/api',
 });
 
 export const UPLOAD_BASE = 'http://localhost:5000';

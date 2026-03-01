@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
 // connect to backend
-const socket = io("http://localhost:5000");
+const socket = io("https://seoul-brew-cafe-backend-9d3v.onrender.com");
 
 export default function OrderStatus({ orderId }) {
   const [status, setStatus] = useState("Accepted");

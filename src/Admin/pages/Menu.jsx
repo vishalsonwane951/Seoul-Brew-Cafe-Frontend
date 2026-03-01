@@ -33,37 +33,7 @@ export default function Menu() {
             .catch(() => {});
     }, [token]);
 
-    // Fetch menu items from API on mount
-    // useEffect(() => {
-    //     if (!token || !user || user.role !== 'admin') return; // only admin can access
-
-    //     const fetchMenu = async () => {
-    //         try {
-    //             const res = await axios.get('http://localhost:5000/api/menu', {
-    //                 headers: { Authorization: `Bearer ${token}` }
-    //             });
-    //             setMenuItems(res.data.map(m => ({
-    //                 id: m.id,
-    //                 name: m.title,
-    //                 category: m.category,
-    //                 price: m.price,
-    //                 desc: m.description,
-    //                 allergens: m.allergens || '',
-    //                 available: m.available,
-    //                 sales: m.sales || 0,
-    //                 stock: m.available ? 'In Stock' : 'Out of Stock',
-    //                 img: m.imageUrl || '☕',
-    //                 kcal: m.kcal || 0
-    //             })));
-
-    //             console.log(`price:${price}`)
-    //         } catch (err) {
-    //             showToast('Failed to fetch menu items.');
-    //         }
-    //     };
-
-    //     fetchMenu();
-    // }, [token, user, setMenuItems, showToast]);
+    
 
     const filtered = (menu || []).filter(
         m => catFilter === 'all' || m.category === catFilter
