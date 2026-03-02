@@ -1,4 +1,4 @@
-  import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { colors, fonts } from "../tokens";
 import Eyebrow from "../components/Eyebrow";
 import FeaturedCard from "../components/FeaturedCard";
@@ -10,7 +10,7 @@ const BtnFill = ({ children, onClick }) => {
   return (
     <button
       onMouseEnter={() => setH(true)}
-      onMouseLeave={() => setH(false)}    
+      onMouseLeave={() => setH(false)}
       onClick={onClick}
       style={{
         padding: "15px 40px",
@@ -61,57 +61,58 @@ const BtnOutline = ({ children, onClick }) => {
 const Hero = ({ setPage }) => {
   const navigate = useNavigate()
   return (
-     <section style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 1fr", paddingTop: "72px", animation: "heroFade 0.8s ease forwards" }}>
-    <style>{`
+    <section style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 1fr", paddingTop: "72px", animation: "heroFade 0.8s ease forwards" }}>
+      <style>{`
       @keyframes heroFade { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
       @keyframes floatCoffee { 0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);} }
       @keyframes subtitleFade { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     `}</style>
 
-    <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "80px 56px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "32px", animation: "subtitleFade 1s ease 0.2s both" }}>
-        <div style={{ width: "40px", height: "1px", background: colors.accent }} />
-        <span style={{ fontFamily: fonts.sans, fontSize: "0.7rem", letterSpacing: "4px", textTransform: "uppercase", color: colors.accent, fontWeight: 400 }}>
-          Sihgad Law College, Pune
-        </span>
-      </div>
-      <h1 style={{ fontFamily: fonts.serif, fontSize: "clamp(3rem, 5.5vw, 6rem)", fontWeight: 700, lineHeight: 0.95, color: colors.ink, letterSpacing: "-2px", margin: 0, animation: "heroFade 1s ease 0.1s both" }}>
-        Good<br />
-        <em style={{ fontStyle: "italic", fontWeight: 400, color: colors.accent }}>Luck</em>
-        <span style={{ display: "block", fontFamily: fonts.sans, fontSize: "0.18em", fontStyle: "normal", fontWeight: 300, color: colors.muted, letterSpacing: "8px", textTransform: "uppercase", marginTop: "12px" }}>Cafe</span>
-      </h1>
-      <p style={{ fontFamily: fonts.sans, fontSize: "1.05rem", lineHeight: 1.8, color: colors.body, maxWidth: "400px", fontWeight: 300, marginTop: "28px", animation: "subtitleFade 1s ease 0.4s both" }}>
-        A Taste of Seoul in Every Sip — inspired by the slow-sip culture of Seoul's finest café alleys, where every cup is a considered ritual.
-      </p>
-      
-      <div style={{ display: "flex", gap: "16px", marginTop: "48px", animation: "subtitleFade 1s ease 0.6s both" }}>
-        <BtnFill onClick={() => navigate('/menu')}>Explore Menu</BtnFill>
-        <BtnOutline onClick={() => navigate('/order')}>Order Now</BtnOutline>
-      </div>
-      <span style={{ fontFamily: fonts.korean, fontSize: "0.75rem", color: colors.line, letterSpacing: "6px", marginTop: "40px", animation: "subtitleFade 1s ease 0.8s both" }}>
-        CAFE      </span>
-    </div>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "80px 56px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "32px", animation: "subtitleFade 1s ease 0.2s both" }}>
+          <div style={{ width: "40px", height: "1px", background: colors.accent }} />
+          <span style={{ fontFamily: fonts.sans, fontSize: "0.7rem", letterSpacing: "4px", textTransform: "uppercase", color: colors.accent, fontWeight: 400 }}>
+            Sihgad Law College, Pune
+          </span>
+        </div>
+        <h1 style={{ fontFamily: fonts.serif, fontSize: "clamp(3rem, 5.5vw, 6rem)", fontWeight: 700, lineHeight: 0.95, color: colors.ink, letterSpacing: "-2px", margin: 0, animation: "heroFade 1s ease 0.1s both" }}>
+          SEOUL<br />
+          <em style={{ fontStyle: "italic", fontWeight: 400, color: colors.accent }}>BREW</em>
+          <span style={{ display: "block", fontFamily: fonts.sans, fontSize: "0.18em", fontStyle: "normal", fontWeight: 300, color: colors.muted, letterSpacing: "8px", textTransform: "uppercase", marginTop: "12px" }}>Cafe</span>
+        </h1>
+        <p style={{ fontFamily: fonts.sans, fontSize: "1.05rem", lineHeight: 1.8, color: colors.body, maxWidth: "400px", fontWeight: 300, marginTop: "28px", animation: "subtitleFade 1s ease 0.4s both" }}>
+          A Taste of Seoul in Every Sip — inspired by the slow-sip culture of Seoul's finest café alleys, where every cup is a considered ritual.
+        </p>
 
-    <div style={{ background: colors.surface, position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px" }}>
-        <div style={{ fontSize: "6rem", animation: "floatCoffee 5s ease-in-out infinite" }}>☕</div>
-        <span style={{ fontFamily: fonts.korean, fontSize: "0.85rem", color: colors.muted, letterSpacing: "8px" }}>SEOUL Brew cafe..!</span>
+        <div style={{ display: "flex", gap: "16px", marginTop: "48px", animation: "subtitleFade 1s ease 0.6s both" }}>
+          <BtnFill onClick={() => navigate('/menu')}>Explore Menu</BtnFill>
+          <BtnOutline onClick={() => navigate('/order')}>Order Now</BtnOutline>
+        </div>
+        <span style={{ fontFamily: fonts.korean, fontSize: "0.75rem", color: colors.line, letterSpacing: "6px", marginTop: "40px", animation: "subtitleFade 1s ease 0.8s both" }}>
+          CAFE      </span>
       </div>
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "grid", gridTemplateColumns: "repeat(3,1fr)", borderTop: `1px solid ${colors.line}` }}>
-        {[["18+", "Drinks"], ["4.9★", "Rating"], ["3K+", "Guests/Mo"]].map(([num, label], i) => (
-          <div key={label} style={{ padding: "20px 16px", textAlign: "center", borderRight: i < 2 ? `1px solid ${colors.line}` : "none" }}>
-            <div style={{ fontFamily: fonts.serif, fontSize: "1.5rem", fontWeight: 700, color: colors.ink }}>{num}</div>
-            <div style={{ fontFamily: fonts.sans, fontSize: "0.6rem", letterSpacing: "2px", textTransform: "uppercase", color: colors.muted, marginTop: "3px" }}>{label}</div>
-          </div>
-        ))}
+
+      <div style={{ background: colors.surface, position: "relative", overflow: "hidden", borderRadius:'45px' }}>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px" }}>
+         <img src="https://i.pinimg.com/736x/49/f2/bb/49f2bb784e3a7b98fda2a19a409a8666.jpg" alt="" style={{width:'100%'}}/>
+          {/* <div style={{ fontSize: "6rem", animation: "floatCoffee 5s ease-in-out infinite" }}>☕</div> */}
+          <span style={{ fontFamily: fonts.korean, fontSize: "0.85rem", color: colors.muted, letterSpacing: "8px" }}>SEOUL Brew cafe..!</span>
+        </div>
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "grid", gridTemplateColumns: "repeat(3,1fr)", borderTop: `1px solid ${colors.line}` }}>
+          {[["18+", "Drinks"], ["4.9★", "Rating"], ["3K+", "Guests/Mo"]].map(([num, label], i) => (
+            <div key={label} style={{ padding: "20px 16px", textAlign: "center", borderRight: i < 2 ? `1px solid ${colors.line}` : "none" }}>
+              <div style={{ fontFamily: fonts.serif, fontSize: "1.5rem", fontWeight: 700, color: colors.ink1 }}>{num}</div>
+              <div style={{ fontFamily: fonts.sans, fontSize: "0.6rem", letterSpacing: "2px", textTransform: "uppercase", color: colors.muted, marginTop: "3px" }}>{label}</div>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
   )
 }
-  
- 
+
+
 
 //  ABOUT SECTION
 const About = () => (
@@ -119,14 +120,17 @@ const About = () => (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "80px", alignItems: "center" }}>
         <div style={{ position: "relative" }}>
-          <div style={{ width: "100%", aspectRatio: "4/5", background: colors.surface, border: `1px solid ${colors.line}`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
-            <span style={{ fontFamily: fonts.korean, fontSize: "4rem", color: colors.line }}>CAFE</span>
+          <div style={{ width: "100%", aspectRatio: "4/5", background: colors.surface, border: `1px solid ${colors.line}`, display: "flex",borderRadius:'45px', alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
+            {/* <span style={{ fontFamily: fonts.korean, fontSize: "4rem", color: colors.line }}>CAFE</span> */}
+            <img src="https://i.pinimg.com/736x/4f/93/69/4f936904e706fb6542af2ebe31e630c5.jpg" alt="" style={{ width:'100%'}}/>
+
             <div style={{ position: "absolute", bottom: "-12px", right: "-12px", width: "80px", height: "80px", border: `1px solid ${colors.accent}`, opacity: 0.4 }} />
           </div>
           <div style={{ position: "absolute", top: "-16px", left: "-16px", width: "88px", height: "88px", borderRadius: "50%", background: colors.accent, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2px" }}>
             <span style={{ fontFamily: fonts.serif, fontSize: "1.4rem", fontWeight: 700, color: colors.white, lineHeight: 1 }}>6+</span>
             <span style={{ fontFamily: fonts.sans, fontSize: "0.5rem", letterSpacing: "2px", textTransform: "uppercase", color: colors.white, opacity: 0.85 }}>Years</span>
           </div>
+
         </div>
 
         <div>
@@ -169,7 +173,7 @@ const Featured = ({ setPage }) => {
   const [error, setError] = useState(null);
   const [linkH, setLinkH] = useState(false);
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const fetchMenu = async () => {
     try {
@@ -209,39 +213,39 @@ const Featured = ({ setPage }) => {
             </h2>
           </div>
 
-            <button
-              onMouseEnter={() => setLinkH(true)}
-              onMouseLeave={() => setLinkH(false)}
-              onClick={() => navigate('/menu')}
-              style={{
-                background: "none",
-                border: "none",
-                padding: 0,
-                fontFamily: fonts.sans,
-                fontSize: "0.75rem",
-                letterSpacing: "2px",
-                textTransform: "uppercase",
-                fontWeight: 400,
-                color: linkH ? colors.white : "rgba(255,255,255,0.4)",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                transition: "color 0.2s",
-                marginBottom: "4px",
-              }}
-            >
-              <span>→</span> Full Menu
-            </button>
-          </div>
+          <button
+            onMouseEnter={() => setLinkH(true)}
+            onMouseLeave={() => setLinkH(false)}
+            onClick={() => navigate('/menu')}
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              fontFamily: fonts.sans,
+              fontSize: "0.75rem",
+              letterSpacing: "2px",
+              textTransform: "uppercase",
+              fontWeight: 400,
+              color: linkH ? colors.white : "rgba(255,255,255,0.4)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              transition: "color 0.2s",
+              marginBottom: "4px",
+            }}
+          >
+            <span>→</span> Full Menu
+          </button>
+        </div>
 
         {error && <div style={{ marginBottom: "24px" }}><ErrorBox message={error} onRetry={fetchMenu} /></div>}
 
-        
-          {featured.map((item) => (
-            <FeaturedCard key={item.id} item={item} />
-          ))}
-        
+
+        {featured.map((item) => (
+          <FeaturedCard key={item.id} item={item} />
+        ))}
+
       </div>
     </section>
   );

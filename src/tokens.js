@@ -9,6 +9,7 @@ export const colors = {
   ink:     "#1a1714",
   accent:  "#b5894a",
   accent2: "#7a9e87",
+  ink1: "#ffffff",
 };
 
 export const fonts = {
