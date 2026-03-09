@@ -41,6 +41,7 @@ const MenuCard = ({ item }) => {
           ₹{item.price}
         </span>
       </div>
+      <img src={item.imageurl} alt={item.title} />
 
       <p style={{
         fontFamily: fonts.sans,

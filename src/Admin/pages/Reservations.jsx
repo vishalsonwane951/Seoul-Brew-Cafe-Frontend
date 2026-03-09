@@ -1,65 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Panel, StatCard, StatsGrid, Btn, Badge, Tbl, Td } from '../components/AdminUI';
 import { Modal, FormGroup, inputStyle, selectStyle, textareaStyle } from '../components/SharedUI';
 import { T } from '../globalstyle';
 import API from '../../services/api';
+import initSocket from '../../services/Soket.js';
 
 const TABLES = ['T-01', 'T-02', 'T-03', 'T-04', 'T-05', 'T-06', 'T-07', 'T-08', 'T-09', 'T-10'];
 const TABLE_COLORS = {
   Approved: { bg: 'rgba(42,92,63,0.3)', border: 'rgba(76,175,122,0.4)', text: '#4caf7a' },
-  Seated: { bg: 'rgba(42,92,63,0.3)', border: 'rgba(76,175,122,0.4)', text: '#4caf7a' },
+  Seated:   { bg: 'rgba(42,92,63,0.3)', border: 'rgba(76,175,122,0.4)', text: '#4caf7a' },
   Reserved: { bg: 'rgba(196,137,42,0.15)', border: 'rgba(196,137,42,0.3)', text: T.adminAmber },
   Incoming: { bg: 'rgba(196,137,42,0.15)', border: 'rgba(196,137,42,0.3)', text: T.adminAmber },
-  Pending: { bg: 'rgba(196,137,42,0.15)', border: 'rgba(196,137,42,0.3)', text: T.adminAmber },
-  Free: { bg: 'rgba(245,240,232,0.05)', border: 'rgba(245,240,232,0.1)', text: 'rgba(245,240,232,0.35)' },
+  Pending:  { bg: 'rgba(196,137,42,0.15)', border: 'rgba(196,137,42,0.3)', text: T.adminAmber },
+  Free:     { bg: 'rgba(245,240,232,0.05)', border: 'rgba(245,240,232,0.1)', text: 'rgba(245,240,232,0.35)' },
 };
 
 export default function Reservations() {
   const { reservations, setReservations, fetchReservations, showToast, createReservation } = useApp();
 
-  // ── Add modal ──────────────────────────────────────────────────────────────
   const [addOpen, setAddOpen] = useState(false);
-
-  // ── Confirm modal (table selection) ───────────────────────────────────────
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState(null);
   const [confirmTable, setConfirmTable] = useState('T-01');
-
-  // ── Edit modal ─────────────────────────────────────────────────────────────
   const [editOpen, setEditOpen] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
   const [editForm, setEditForm] = useState({});
-
-  // ── Delete & Cancel confirmation ids ──────────────────────────────────────
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [cancelId, setCancelId] = useState(null);
 
   const today = new Date().toISOString().split('T')[0];
-
-  // ── Date filter ────────────────────────────────────────────────────────────
   const [selectedDate, setSelectedDate] = useState(today);
 
   const [form, setForm] = useState({
-    customerName: '',
-    email: '',
-    phone: '',
-    date: today,
-    time: '13:00',
-    guests: 2,
-    table: 'T-03',
-    notes: ''
+    customerName: '', email: '', phone: '',
+    date: today, time: '13:00', guests: 2, table: 'T-03', notes: ''
   });
 
   const BADGE = { Approved: 'ready', Pending: 'wait', Declined: 'danger', Seated: 'ready', Cancelled: 'danger' };
-
-  // Statuses that do NOT hold a table
   const FREE_STATUSES = ['Declined', 'Cancelled', 'Done'];
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
   const getToken = () => localStorage.getItem('token');
 
-  // Tables already occupied on a specific date (exclude the reservation being edited/confirmed)
+  // ── Fetch on date change ───────────────────────────────────────────────────
+  useEffect(() => {
+    fetchReservations(selectedDate);
+  }, [selectedDate]);
+
+  // ── Socket.io real-time listener ───────────────────────────────────────────
+  useEffect(() => {
+    const handler = () => fetchReservations(selectedDate);
+
+    initSocket.on('reservations:updated', handler);
+    return () => initSocket.off('reservations:updated', handler);
+  }, [selectedDate]);
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
   const occupiedTables = (date, excludeId = null) =>
     reservations
       .filter(r =>
@@ -70,15 +65,33 @@ export default function Reservations() {
       )
       .map(r => r.table);
 
-  // Sort: latest first, then filter by selected date
   const sortedReservations = [...(reservations || [])]
     .sort((a, b) => (a._id && b._id ? (b._id > a._id ? 1 : -1) : 0))
-    .filter(r => {
-      const rDate = r.date ? r.date.split('T')[0] : '';
-      return rDate === selectedDate;
-    });
+    .filter(r => (r.date ? r.date.split('T')[0] : '') === selectedDate);
 
-  // ── Open confirm: skip table modal if table already assigned ──────────────
+  // ── Status update ──────────────────────────────────────────────────────────
+  const TOAST = { Approved: 'Reservation approved!', Cancelled: 'Reservation cancelled', Done: 'Table marked as Done!' };
+
+  const updateStatus = async (id, status, extra = {}) => {
+    try {
+      const token = getToken();
+      if (!token) { showToast('Not authorized!'); return; }
+
+      await API.put(`/${id}/status`, { status, ...extra }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setReservations(prev =>
+        prev.map(r => r._id === id ? { ...r, status, ...extra } : r)
+      );
+      showToast(TOAST[status] || 'Updated!');
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      showToast('Update failed');
+    }
+  };
+
+  // ── Confirm ────────────────────────────────────────────────────────────────
   const openConfirm = (reservation) => {
     const resDate = reservation.date?.split('T')[0] || today;
     const taken = occupiedTables(resDate, reservation._id);
@@ -94,34 +107,6 @@ export default function Reservations() {
     }
   };
 
-  // ── Single API for all status updates ─────────────────────────────────────
-  const TOAST = {
-    Approved:  'Reservation approved!',
-    Cancelled: 'Reservation cancelled',
-    Done:      'Table marked as Done!',
-  };
-
-  const updateStatus = async (id, status, extra = {}) => {
-    try {
-      const token = getToken();
-      if (!token) { showToast('Not authorized!'); return; }
-
-      await API.put(`/${id}/status`,
-        { status, ...extra },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setReservations(prev =>
-        prev.map(r => r._id === id ? { ...r, status, ...extra } : r)
-      );
-      showToast(TOAST[status] || 'Updated!');
-    } catch (err) {
-      console.error(err.response?.data || err.message);
-      showToast('Update failed');
-    }
-  };
-
-  // ── Approve directly (table already assigned) ──────────────────────────────
   const confirmDirect = (id, table) => {
     const reservation = reservations.find(r => r._id === id);
     const resDate = reservation?.date?.split('T')[0] || today;
@@ -132,7 +117,6 @@ export default function Reservations() {
     updateStatus(id, 'Approved', { table });
   };
 
-  // ── Confirm from modal (table selected by admin) ───────────────────────────
   const confirm = () => {
     if (!confirmTarget) return;
     updateStatus(confirmTarget._id, 'Approved', { table: confirmTable });
@@ -140,13 +124,10 @@ export default function Reservations() {
     setConfirmTarget(null);
   };
 
-  // ── Cancel → opens confirmation popup ─────────────────────────────────────
   const cancel = (id) => setCancelId(id);
-
-  // ── Release table (Approved → Done, frees the table) ──────────────────────
   const release = (id) => updateStatus(id, 'Done');
 
-  // ── Hard delete (only for Cancelled/Done records) ─────────────────────────
+  // ── Delete ─────────────────────────────────────────────────────────────────
   const deleteReservation = async () => {
     try {
       const token = getToken();
@@ -166,7 +147,7 @@ export default function Reservations() {
     }
   };
 
-  // ── Open edit modal ────────────────────────────────────────────────────────
+  // ── Edit ───────────────────────────────────────────────────────────────────
   const openEdit = (reservation) => {
     setEditTarget(reservation);
     setEditForm({
@@ -182,7 +163,6 @@ export default function Reservations() {
     setEditOpen(true);
   };
 
-  // ── Save edit ──────────────────────────────────────────────────────────────
   const saveEdit = async () => {
     if (!editTarget) return;
     if (!editForm.customerName || !editForm.email || !editForm.phone) {
@@ -209,9 +189,7 @@ export default function Reservations() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      setReservations(prev =>
-        prev.map(r => r._id === id ? { ...r, ...payload } : r)
-      );
+      setReservations(prev => prev.map(r => r._id === id ? { ...r, ...payload } : r));
       showToast('Reservation updated!');
       setEditOpen(false);
       setEditTarget(null);
@@ -221,7 +199,7 @@ export default function Reservations() {
     }
   };
 
-  // ── Add reservation ────────────────────────────────────────────────────────
+  // ── Add ────────────────────────────────────────────────────────────────────
   const add = async () => {
     if (!form.customerName || !form.email || !form.phone) {
       showToast('Please fill all required fields.');
@@ -248,7 +226,7 @@ export default function Reservations() {
     }
   };
 
-  // ── Dynamic table map — only show bookings for the selected date ──────────
+  // ── Table map ──────────────────────────────────────────────────────────────
   const tableStatusMap = TABLES.map(t => {
     const res = reservations.find(r =>
       r.table === t &&
@@ -260,7 +238,6 @@ export default function Reservations() {
 
   return (
     <div className="fade-up">
-      {/* Stats */}
       <StatsGrid>
         <StatCard label="Today Total" value={reservations?.length || 0} />
         <StatCard label="Confirmed" value={reservations?.filter(r => r.status === 'Approved' || r.status === 'Seated').length || 0} valueColor="#4caf7a" />
@@ -268,7 +245,6 @@ export default function Reservations() {
         <StatCard label="Total Guests" value={reservations?.reduce((a, r) => a + (Number(r.guests) || 0), 0) || 0} />
       </StatsGrid>
 
-      {/* Reservation List */}
       <Panel title="Reservations" action={
         <div style={{ display: 'flex', gap: 10 }}>
           <input type="date" style={{ ...inputStyle(), width: 160, padding: '6px 12px' }} value={selectedDate} onChange={e => setSelectedDate(e.target.value)} />
@@ -287,10 +263,8 @@ export default function Reservations() {
               <Td>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {FREE_STATUSES.includes(r.status) ? (
-                    // Finished — only delete allowed
                     <Btn variant="danger" size="sm" onClick={() => setDeleteTarget(r._id)}>Delete</Btn>
                   ) : (
-                    // Active — normal actions
                     <>
                       {r.status === 'Pending' && <Btn variant="success" size="sm" onClick={() => openConfirm(r)}>Confirm</Btn>}
                       {r.status === 'Approved' && <Btn variant="danger" size="sm" onClick={() => release(r._id)}>Release</Btn>}
@@ -305,7 +279,6 @@ export default function Reservations() {
         </Tbl>
       </Panel>
 
-      {/* Table Map */}
       <Panel title="Table Map">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, maxWidth: 520 }}>
           {tableStatusMap.map(t => {
@@ -332,11 +305,7 @@ export default function Reservations() {
           })}
         </div>
         <div style={{ display: 'flex', gap: 20, marginTop: 14, fontFamily: T.mono, fontSize: '0.53rem', color: 'rgba(245,240,232,0.4)' }}>
-          {[
-            ['Occupied', 'rgba(42,92,63,0.6)'],
-            ['Reserved/Pending', 'rgba(196,137,42,0.5)'],
-            ['Free', 'rgba(245,240,232,0.12)']
-          ].map(([l, bg]) => (
+          {[['Occupied', 'rgba(42,92,63,0.6)'], ['Reserved/Pending', 'rgba(196,137,42,0.5)'], ['Free', 'rgba(245,240,232,0.12)']].map(([l, bg]) => (
             <span key={l} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 10, height: 10, background: bg, borderRadius: 2, display: 'inline-block' }} />
               {l}
@@ -345,7 +314,7 @@ export default function Reservations() {
         </div>
       </Panel>
 
-      {/* ── Confirm Modal (Table Selection) ─────────────────────────────────── */}
+      {/* Confirm Modal */}
       <Modal title="Confirm Reservation" open={confirmOpen} onClose={() => setConfirmOpen(false)}>
         {confirmTarget && (
           <>
@@ -354,20 +323,11 @@ export default function Reservations() {
               {' '}({confirmTarget.guests} guests) at {confirmTarget.time}.
             </p>
             <FormGroup label="Assign Table">
-              <select
-                style={selectStyle()}
-                value={confirmTable}
-                onChange={e => setConfirmTable(e.target.value)}
-              >
+              <select style={selectStyle()} value={confirmTable} onChange={e => setConfirmTable(e.target.value)}>
                 {TABLES.map(t => {
                   const resDate = confirmTarget.date?.split('T')[0] || today;
-                  const taken = occupiedTables(resDate, confirmTarget._id);
-                  const isOccupied = taken.includes(t);
-                  return (
-                    <option key={t} value={t} disabled={isOccupied}>
-                      {t}{isOccupied ? ' (Occupied)' : ''}
-                    </option>
-                  );
+                  const isOccupied = occupiedTables(resDate, confirmTarget._id).includes(t);
+                  return <option key={t} value={t} disabled={isOccupied}>{t}{isOccupied ? ' (Occupied)' : ''}</option>;
                 })}
               </select>
             </FormGroup>
@@ -379,94 +339,57 @@ export default function Reservations() {
         )}
       </Modal>
 
-      {/* ── Edit Modal ───────────────────────────────────────────────────────── */}
+      {/* Edit Modal */}
       <Modal title="Edit Reservation" open={editOpen} onClose={() => setEditOpen(false)}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <FormGroup label="Name *">
-            <input style={inputStyle()} value={editForm.customerName || ''} onChange={e => setEditForm(p => ({ ...p, customerName: e.target.value }))} placeholder="Customer name" />
-          </FormGroup>
-          <FormGroup label="Email *">
-            <input type="email" style={inputStyle()} value={editForm.email || ''} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} placeholder="Email" />
-          </FormGroup>
-          <FormGroup label="Phone *">
-            <input style={inputStyle()} value={editForm.phone || ''} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} placeholder="010-0000-0000" />
-          </FormGroup>
-          <FormGroup label="Date">
-            <input type="date" style={inputStyle()} value={editForm.date || ''} onChange={e => setEditForm(p => ({ ...p, date: e.target.value }))} />
-          </FormGroup>
-          <FormGroup label="Time">
-            <input type="time" style={inputStyle()} value={editForm.time || ''} onChange={e => setEditForm(p => ({ ...p, time: e.target.value }))} />
-          </FormGroup>
-          <FormGroup label="Guests">
-            <input type="number" style={inputStyle()} value={editForm.guests || 1} min={1} max={20} onChange={e => setEditForm(p => ({ ...p, guests: parseInt(e.target.value) || 1 }))} />
-          </FormGroup>
+          <FormGroup label="Name *"><input style={inputStyle()} value={editForm.customerName || ''} onChange={e => setEditForm(p => ({ ...p, customerName: e.target.value }))} placeholder="Customer name" /></FormGroup>
+          <FormGroup label="Email *"><input type="email" style={inputStyle()} value={editForm.email || ''} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} placeholder="Email" /></FormGroup>
+          <FormGroup label="Phone *"><input style={inputStyle()} value={editForm.phone || ''} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} placeholder="010-0000-0000" /></FormGroup>
+          <FormGroup label="Date"><input type="date" style={inputStyle()} value={editForm.date || ''} onChange={e => setEditForm(p => ({ ...p, date: e.target.value }))} /></FormGroup>
+          <FormGroup label="Time"><input type="time" style={inputStyle()} value={editForm.time || ''} onChange={e => setEditForm(p => ({ ...p, time: e.target.value }))} /></FormGroup>
+          <FormGroup label="Guests"><input type="number" style={inputStyle()} value={editForm.guests || 1} min={1} max={20} onChange={e => setEditForm(p => ({ ...p, guests: parseInt(e.target.value) || 1 }))} /></FormGroup>
           <FormGroup label="Table">
             <select style={selectStyle()} value={editForm.table || 'T-01'} onChange={e => setEditForm(p => ({ ...p, table: e.target.value }))}>
               {TABLES.map(t => {
-                const taken = occupiedTables(editForm.date || today, editTarget?._id);
-                const isOccupied = taken.includes(t);
-                return (
-                  <option key={t} value={t} disabled={isOccupied}>
-                    {t}{isOccupied ? ' (Occupied)' : ''}
-                  </option>
-                );
+                const isOccupied = occupiedTables(editForm.date || today, editTarget?._id).includes(t);
+                return <option key={t} value={t} disabled={isOccupied}>{t}{isOccupied ? ' (Occupied)' : ''}</option>;
               })}
             </select>
           </FormGroup>
         </div>
-        <FormGroup label="Notes">
-          <textarea style={textareaStyle()} value={editForm.notes || ''} onChange={e => setEditForm(p => ({ ...p, notes: e.target.value }))} placeholder="Special requests…" />
-        </FormGroup>
+        <FormGroup label="Notes"><textarea style={textareaStyle()} value={editForm.notes || ''} onChange={e => setEditForm(p => ({ ...p, notes: e.target.value }))} placeholder="Special requests…" /></FormGroup>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
           <Btn variant="ghost" onClick={() => setEditOpen(false)}>Cancel</Btn>
           <Btn variant="primary" onClick={saveEdit}>Save Changes</Btn>
         </div>
       </Modal>
 
-      {/* ── Add Reservation Modal ─────────────────────────────────────────── */}
+      {/* Add Modal */}
       <Modal title="New Reservation" open={addOpen} onClose={() => setAddOpen(false)}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-          <FormGroup label="Name *">
-            <input style={inputStyle()} value={form.customerName} onChange={e => setForm(p => ({ ...p, customerName: e.target.value }))} placeholder="Customer name" />
-          </FormGroup>
-          <FormGroup label="Email *">
-            <input type='email' style={inputStyle()} value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="Email" />
-          </FormGroup>
-          <FormGroup label="Phone">
-            <input style={inputStyle()} value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} placeholder="010-0000-0000" />
-          </FormGroup>
-          <FormGroup label="Date">
-            <input type="date" style={inputStyle()} value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} />
-          </FormGroup>
-          <FormGroup label="Time">
-            <input type="time" style={inputStyle()} value={form.time} onChange={e => setForm(p => ({ ...p, time: e.target.value }))} />
-          </FormGroup>
-          <FormGroup label="Guests">
-            <input type="number" style={inputStyle()} value={form.guests} min={1} max={20} onChange={e => setForm(p => ({ ...p, guests: parseInt(e.target.value) || 1 }))} />
-          </FormGroup>
+          <FormGroup label="Name *"><input style={inputStyle()} value={form.customerName} onChange={e => setForm(p => ({ ...p, customerName: e.target.value }))} placeholder="Customer name" /></FormGroup>
+          <FormGroup label="Email *"><input type='email' style={inputStyle()} value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="Email" /></FormGroup>
+          <FormGroup label="Phone"><input style={inputStyle()} value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} placeholder="010-0000-0000" /></FormGroup>
+          <FormGroup label="Date"><input type="date" style={inputStyle()} value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} /></FormGroup>
+          <FormGroup label="Time"><input type="time" style={inputStyle()} value={form.time} onChange={e => setForm(p => ({ ...p, time: e.target.value }))} /></FormGroup>
+          <FormGroup label="Guests"><input type="number" style={inputStyle()} value={form.guests} min={1} max={20} onChange={e => setForm(p => ({ ...p, guests: parseInt(e.target.value) || 1 }))} /></FormGroup>
           <FormGroup label="Table">
             <select style={selectStyle()} value={form.table} onChange={e => setForm(p => ({ ...p, table: e.target.value }))}>
               {TABLES.map(t => {
                 const isOccupied = occupiedTables(form.date).includes(t);
-                return (
-                  <option key={t} value={t} disabled={isOccupied}>
-                    {t}{isOccupied ? ' (Occupied)' : ''}
-                  </option>
-                );
+                return <option key={t} value={t} disabled={isOccupied}>{t}{isOccupied ? ' (Occupied)' : ''}</option>;
               })}
             </select>
           </FormGroup>
         </div>
-        <FormGroup label="Notes">
-          <textarea style={textareaStyle()} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Special requests…" />
-        </FormGroup>
+        <FormGroup label="Notes"><textarea style={textareaStyle()} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Special requests…" /></FormGroup>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
           <Btn variant="ghost" onClick={() => setAddOpen(false)}>Cancel</Btn>
           <Btn variant="primary" onClick={add}>Confirm Reservation</Btn>
         </div>
       </Modal>
 
-      {/* ── Delete Confirmation Modal ─────────────────────────────────────── */}
+      {/* Delete Modal */}
       <Modal title="Delete Reservation" open={!!deleteTarget} onClose={() => setDeleteTarget(null)}>
         <p style={{ color: 'rgba(245,240,232,0.7)', fontSize: '0.85rem', marginBottom: 20 }}>
           Are you sure you want to permanently delete this reservation? This cannot be undone.
@@ -477,7 +400,7 @@ export default function Reservations() {
         </div>
       </Modal>
 
-      {/* ── Cancel Confirmation Modal ─────────────────────────────────────── */}
+      {/* Cancel Modal */}
       <Modal title="Cancel Reservation" open={!!cancelId} onClose={() => setCancelId(null)}>
         <p style={{ color: 'rgba(245,240,232,0.7)', fontSize: '0.85rem', marginBottom: 20 }}>
           Are you sure you want to cancel this reservation?
@@ -487,7 +410,6 @@ export default function Reservations() {
           <Btn variant="danger" onClick={() => { updateStatus(cancelId, 'Cancelled'); setCancelId(null); }}>Yes, Cancel</Btn>
         </div>
       </Modal>
-
     </div>
   );
 }

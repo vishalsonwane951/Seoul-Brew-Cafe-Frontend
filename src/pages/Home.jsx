@@ -168,7 +168,7 @@ const About = () => (
   </section>
 );
 
-const Featured = ({ setPage }) => {
+const Featured = () => {
   const [menu, setMenu] = useState(null);
   const [error, setError] = useState(null);
   const [linkH, setLinkH] = useState(false);
@@ -191,7 +191,7 @@ const Featured = ({ setPage }) => {
 
   const featured = menu
     ? [
-      ...(menu.coffee?.filter((i) => i.available !== false).slice(0, 1) ?? []),
+      ...(menu.Coffee?.filter((i) => i.available !== false).slice(0, 1) ?? []),
       ...(menu.matcha?.filter((i) => i.available !== false).slice(0, 1) ?? []),
       ...(menu.food?.filter((i) => i.available !== false).slice(0, 1) ?? []),
     ]

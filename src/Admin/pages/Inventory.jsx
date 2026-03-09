@@ -4,7 +4,7 @@ import { Panel, StatCard, StatsGrid, Btn, Badge, Tbl, Td, ProgressBar } from '..
 import { Modal, FormGroup, inputStyle, selectStyle } from '../components/SharedUI';
 import { T } from '../globalstyle';
 import API from '../../services/api';
-import { socket } from '../../Soket';
+import socket from '../../services/Soket';
 
 const STATUS_COLOR = { good: '#4caf7a', warn: T.adminAmber, low: '#e05555', out: '#e05555' };
 const STATUS_LABEL = { good: 'Good', warn: 'Order Soon', low: 'Low!', out: 'Out!' };

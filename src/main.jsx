@@ -6,7 +6,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import './Styles/custom.css';
 import { MenuProvider } from "./context/MenuContext";
-
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { AppProvider } from "./Admin/context/AppContext.jsx";
  

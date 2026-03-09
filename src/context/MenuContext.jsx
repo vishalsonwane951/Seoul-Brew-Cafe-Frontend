@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import API from "../services/api";
-import { socket } from "../Soket";
+import socket from "../services/Soket.js";
 
 export const MenuContext = createContext();
 

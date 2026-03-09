@@ -18,11 +18,14 @@ export const CartProvider = ({ children }) => {
       if (nq <= 0) {
         const n = { ...c };
         delete n[id];
+
+
         return n;
       }
       return { ...c, [id]: { ...c[id], qty: nq } };
     });
   };
+
 
   const clearCart = () => setCart({});
 

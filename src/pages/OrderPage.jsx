@@ -5,7 +5,7 @@ import Toast from "../components/Toast";
 import { MenuContext } from "../context/MenuContext";
 import { CartContext } from "../context/CartContext";
 import API from "../services/api.js";
-import { socket } from "../Soket.js";
+import socket from "../services/Soket.js";
 import axios from "axios";
 
 /* ===========================

@@ -106,12 +106,12 @@ const ReservationPage = () => {
       date: form.date,
       time: form.time,
       guests: form.guests,
-      notes: form.notes,
-      specialRequest: form.notes,
+      specialRequest: form.notes, // ✅ removed duplicate `notes` key
+      table: '-',                 // ✅ customer doesn't pick table, admin assigns it
     };
 
     const res = await API.post("/reservations", payload);
-    setResId(res.data.id);
+    setResId(res.data.reservation._id); // ✅ was res.data.id, now matches your response shape
     setDone(true);
   } catch (err) {
     console.error("Reservation failed:", err);

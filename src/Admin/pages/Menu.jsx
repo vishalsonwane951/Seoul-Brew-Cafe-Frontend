@@ -5,6 +5,7 @@ import { Modal, FormGroup, inputStyle, selectStyle, textareaStyle } from '../com
 import { useContext } from 'react';
 import { MenuContext } from '../../context/MenuContext';
 import API from '../../services/api';
+import axios from 'axios';
 
 const CATS = ['coffee', 'matcha', 'tea', 'latte', 'food', 'bakery'];
 
@@ -26,6 +27,8 @@ export default function Menu() {
     });
     const token = user?.token || localStorage.getItem('token');
 
+    console.log("TOKEN----:", token);
+
     useEffect(() => {
         if (!token) return;
         API.get('/inventory', { headers: { Authorization: `Bearer ${token}` } })
@@ -41,43 +44,36 @@ export default function Menu() {
 
     // Add menu item via API
     const handleAdd = async () => {
-        if (!form.name || !form.price) {
-            showToast('Please fill required fields.');
-            return;
-        }
+  if (!form.name || !form.price) return showToast("Please fill required fields");
 
-        const recipe = (form.recipe || [])
-            .filter((r) => r.inventoryItemId && Number(r.quantityPerServing) > 0)
-            .map((r) => ({ inventoryItemId: r.inventoryItemId, quantityPerServing: Number(r.quantityPerServing) }));
+  const recipe = (form.recipe || [])
+    .filter(r => r.inventoryItemId && Number(r.quantityPerServing) > 0)
+    .map(r => ({ inventoryItemId: r.inventoryItemId, quantityPerServing: Number(r.quantityPerServing) }));
 
-        try {
-            const res = await API.post(
-                '/menu',
-                {
-                    title: form.name,
-                    category: form.category,
-                    price: Number(form.price),
-                    description: form.desc,
-                    allergens: form.allergens,
-                    imageUrl: form.imageUrl || '☕',
-                    available: true,
-                    kcal: form.kcal || 0,
-                    recipe,
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+  try {
+    const res = await API.post("/menu", {
+      title: form.name,
+      category: form.category,
+      price: Number(form.price),
+      description: form.desc,
+      allergens: form.allergens,
+      imageUrl: form.imageUrl || "☕",
+      available: true,
+      kcal: form.kcal || 0,
+      recipe
+    });
 
-            const newItem = res.data;
-            setMenu((prev) => [...prev, { ...newItem }]);
-            showToast('Menu item added!');
-            setAddOpen(false);
-            setForm({ name: '', category: 'coffee', price: '', desc: '', allergens: '', imageUrl: '☕', recipe: [] });
+    const newItem = res.data;
+    setMenu(prev => [newItem, ...prev]);
+    showToast("Menu item added!");
+    setAddOpen(false);
+    setForm({ name: '', category: 'coffee', price: '', desc: '', allergens: '', imageUrl: '☕', recipe: [] });
 
-        } catch (err) {
-            console.error(err);
-            showToast('Failed to add menu item.');
-        }
-    };
+  } catch (err) {
+    console.error("Add menu error:", err.response?.data || err.message);
+    showToast("Failed to add menu item.");
+  }
+};
 
 
     // Edit menu item via API

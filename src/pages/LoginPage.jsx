@@ -40,9 +40,7 @@ export default function LoginPage({ setUser }) {
         setLoading(true);
 
         try {
-            const res = await API.post("/login",
-                { email: form.email, password: form.password }
-            );
+           const res = await API.post("/login", { email: form.email, password: form.password });
 
             console.log("LOGIN RESPONSE:", res.data);
 
