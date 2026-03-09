@@ -134,6 +134,16 @@ export default function Staff() {
     }
   };
 
+  const getMediaUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    // Remove trailing slash from base, ensure leading slash on path
+    const base = UPLOAD_BASE.replace(/\/$/, '');
+    const path = url.startsWith('/') ? url : `/${url}`;
+    return `${base}${path}`;
+  };
+
+
   const startEdit = (member) => {
     setEditingId(member._id);
     setEditForm({
@@ -250,230 +260,230 @@ export default function Staff() {
         }
       >
         {showOnboard && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-            gap: 10,
-            marginBottom: 10,
-          }}
-        >
-          <input
-            name="name"
-            placeholder="Name"
-            value={form.name}
-            onChange={handleChange(setForm)}
+          <div
             style={{
-              padding: 8,
-              borderRadius: 6,
-              border: '1px solid rgba(245,240,232,0.16)',
-              background: 'rgba(10,6,4,0.8)',
-              color: '#f5f0e8',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
-            }}
-          />
-          <input
-            name="role"
-            placeholder="Role (e.g. BARISTA)"
-            value={form.role}
-            onChange={handleChange(setForm)}
-            style={{
-              padding: 8,
-              borderRadius: 6,
-              border: '1px solid rgba(245,240,232,0.16)',
-              background: 'rgba(10,6,4,0.8)',
-              color: '#f5f0e8',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
-            }}
-          />
-          <select
-            name="type"
-            value={form.type}
-            onChange={handleChange(setForm)}
-            style={{
-              padding: 8,
-              borderRadius: 6,
-              border: '1px solid rgba(245,240,232,0.16)',
-              background: 'rgba(10,6,4,0.8)',
-              color: '#f5f0e8',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+              gap: 10,
+              marginBottom: 10,
             }}
           >
-            <option value="Full Time">Full Time</option>
-            <option value="Part Time">Part Time</option>
-            <option value="Contract">Contract</option>
-            <option value="Intern">Intern</option>
-          </select>
-          <select
-            name="status"
-            value={form.status}
-            onChange={handleChange(setForm)}
-            style={{
-              padding: 8,
-              borderRadius: 6,
-              border: '1px solid rgba(245,240,232,0.16)',
-              background: 'rgba(10,6,4,0.8)',
-              color: '#f5f0e8',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
-            }}
-          >
-            <option value="On Shift">On Shift</option>
-            <option value="Day Off">Day Off</option>
-          </select>
-          <input
-            name="since"
-            placeholder="Since (e.g. Mar 2021)"
-            value={form.since}
-            onChange={handleChange(setForm)}
-            style={{
-              padding: 8,
-              borderRadius: 6,
-              border: '1px solid rgba(245,240,232,0.16)',
-              background: 'rgba(10,6,4,0.8)',
-              color: '#f5f0e8',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
-            }}
-          />
-          <input
-            name="hours"
-            placeholder="Weekly hours (e.g. 45h)"
-            value={form.hours}
-            onChange={handleChange(setForm)}
-            style={{
-              padding: 8,
-              borderRadius: 6,
-              border: '1px solid rgba(245,240,232,0.16)',
-              background: 'rgba(10,6,4,0.8)',
-              color: '#f5f0e8',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
-            }}
-          />
-          <input
-            name="schedule"
-            placeholder="Mon–Sun (comma separated, e.g. 09–18,09–18,…)"
-            value={form.schedule}
-            onChange={handleChange(setForm)}
-            style={{
-              padding: 8,
-              borderRadius: 6,
-              border: '1px solid rgba(245,240,232,0.16)',
-              background: 'rgba(10,6,4,0.8)',
-              color: '#f5f0e8',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
-              gridColumn: 'span 3',
-            }}
-          />
-          <label style={{ gridColumn: 'span 3', fontFamily: T.mono, fontSize: '0.72rem', color: 'rgba(245,240,232,0.7)' }}>
-            Profile photo (upload)
-          </label>
-          <input
-            ref={formPhotoRef}
-            type="file"
-            accept="image/*"
-            style={{
-              gridColumn: 'span 3',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
-            }}
-          />
-          <input
-            name="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={handleChange(setForm)}
-            style={{
-              padding: 8,
-              borderRadius: 6,
-              border: '1px solid rgba(245,240,232,0.16)',
-              background: 'rgba(10,6,4,0.8)',
-              color: '#f5f0e8',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
-            }}
-          />
-          <input
-            name="phone"
-            placeholder="Phone"
-            value={form.phone}
-            onChange={handleChange(setForm)}
-            style={{
-              padding: 8,
-              borderRadius: 6,
-              border: '1px solid rgba(245,240,232,0.16)',
-              background: 'rgba(10,6,4,0.8)',
-              color: '#f5f0e8',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
-            }}
-          />
-          <input
-            name="address"
-            placeholder="Address"
-            value={form.address}
-            onChange={handleChange(setForm)}
-            style={{
-              padding: 8,
-              borderRadius: 6,
-              border: '1px solid rgba(245,240,232,0.16)',
-              background: 'rgba(10,6,4,0.8)',
-              color: '#f5f0e8',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
-            }}
-          />
-          <input
-            name="emergencyContact"
-            placeholder="Emergency contact"
-            value={form.emergencyContact}
-            onChange={handleChange(setForm)}
-            style={{
-              padding: 8,
-              borderRadius: 6,
-              border: '1px solid rgba(245,240,232,0.16)',
-              background: 'rgba(10,6,4,0.8)',
-              color: '#f5f0e8',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
-              gridColumn: 'span 2',
-            }}
-          />
-          <input
-            name="onboardedDoc"
-            placeholder="Onboarded doc (optional description)"
-            value={form.onboardedDoc}
-            onChange={handleChange(setForm)}
-            style={{
-              padding: 8,
-              borderRadius: 6,
-              border: '1px solid rgba(245,240,232,0.16)',
-              background: 'rgba(10,6,4,0.8)',
-              color: '#f5f0e8',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
-              gridColumn: 'span 3',
-            }}
-          />
-          <label style={{ gridColumn: 'span 3', fontFamily: T.mono, fontSize: '0.72rem', color: 'rgba(245,240,232,0.7)' }}>
-            Onboarded document (upload PDF, doc, etc.)
-          </label>
-          <input
-            ref={formDocRef}
-            type="file"
-            accept=".pdf,.doc,.docx,.txt,image/*"
-            style={{
-              gridColumn: 'span 3',
-              fontFamily: T.mono,
-              fontSize: '0.78rem',
-            }}
-          />
-        </div>
+            <input
+              name="name"
+              placeholder="Name"
+              value={form.name}
+              onChange={handleChange(setForm)}
+              style={{
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid rgba(245,240,232,0.16)',
+                background: 'rgba(10,6,4,0.8)',
+                color: '#f5f0e8',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+              }}
+            />
+            <input
+              name="role"
+              placeholder="Role (e.g. BARISTA)"
+              value={form.role}
+              onChange={handleChange(setForm)}
+              style={{
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid rgba(245,240,232,0.16)',
+                background: 'rgba(10,6,4,0.8)',
+                color: '#f5f0e8',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+              }}
+            />
+            <select
+              name="type"
+              value={form.type}
+              onChange={handleChange(setForm)}
+              style={{
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid rgba(245,240,232,0.16)',
+                background: 'rgba(10,6,4,0.8)',
+                color: '#f5f0e8',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+              }}
+            >
+              <option value="Full Time">Full Time</option>
+              <option value="Part Time">Part Time</option>
+              <option value="Contract">Contract</option>
+              <option value="Intern">Intern</option>
+            </select>
+            <select
+              name="status"
+              value={form.status}
+              onChange={handleChange(setForm)}
+              style={{
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid rgba(245,240,232,0.16)',
+                background: 'rgba(10,6,4,0.8)',
+                color: '#f5f0e8',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+              }}
+            >
+              <option value="On Shift">On Shift</option>
+              <option value="Day Off">Day Off</option>
+            </select>
+            <input
+              name="since"
+              placeholder="Since (e.g. Mar 2021)"
+              value={form.since}
+              onChange={handleChange(setForm)}
+              style={{
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid rgba(245,240,232,0.16)',
+                background: 'rgba(10,6,4,0.8)',
+                color: '#f5f0e8',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+              }}
+            />
+            <input
+              name="hours"
+              placeholder="Weekly hours (e.g. 45h)"
+              value={form.hours}
+              onChange={handleChange(setForm)}
+              style={{
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid rgba(245,240,232,0.16)',
+                background: 'rgba(10,6,4,0.8)',
+                color: '#f5f0e8',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+              }}
+            />
+            <input
+              name="schedule"
+              placeholder="Mon–Sun (comma separated, e.g. 09–18,09–18,…)"
+              value={form.schedule}
+              onChange={handleChange(setForm)}
+              style={{
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid rgba(245,240,232,0.16)',
+                background: 'rgba(10,6,4,0.8)',
+                color: '#f5f0e8',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+                gridColumn: 'span 3',
+              }}
+            />
+            <label style={{ gridColumn: 'span 3', fontFamily: T.mono, fontSize: '0.72rem', color: 'rgba(245,240,232,0.7)' }}>
+              Profile photo (upload)
+            </label>
+            <input
+              ref={formPhotoRef}
+              type="file"
+              accept="image/*"
+              style={{
+                gridColumn: 'span 3',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+              }}
+            />
+            <input
+              name="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={handleChange(setForm)}
+              style={{
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid rgba(245,240,232,0.16)',
+                background: 'rgba(10,6,4,0.8)',
+                color: '#f5f0e8',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+              }}
+            />
+            <input
+              name="phone"
+              placeholder="Phone"
+              value={form.phone}
+              onChange={handleChange(setForm)}
+              style={{
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid rgba(245,240,232,0.16)',
+                background: 'rgba(10,6,4,0.8)',
+                color: '#f5f0e8',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+              }}
+            />
+            <input
+              name="address"
+              placeholder="Address"
+              value={form.address}
+              onChange={handleChange(setForm)}
+              style={{
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid rgba(245,240,232,0.16)',
+                background: 'rgba(10,6,4,0.8)',
+                color: '#f5f0e8',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+              }}
+            />
+            <input
+              name="emergencyContact"
+              placeholder="Emergency contact"
+              value={form.emergencyContact}
+              onChange={handleChange(setForm)}
+              style={{
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid rgba(245,240,232,0.16)',
+                background: 'rgba(10,6,4,0.8)',
+                color: '#f5f0e8',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+                gridColumn: 'span 2',
+              }}
+            />
+            <input
+              name="onboardedDoc"
+              placeholder="Onboarded doc (optional description)"
+              value={form.onboardedDoc}
+              onChange={handleChange(setForm)}
+              style={{
+                padding: 8,
+                borderRadius: 6,
+                border: '1px solid rgba(245,240,232,0.16)',
+                background: 'rgba(10,6,4,0.8)',
+                color: '#f5f0e8',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+                gridColumn: 'span 3',
+              }}
+            />
+            <label style={{ gridColumn: 'span 3', fontFamily: T.mono, fontSize: '0.72rem', color: 'rgba(245,240,232,0.7)' }}>
+              Onboarded document (upload PDF, doc, etc.)
+            </label>
+            <input
+              ref={formDocRef}
+              type="file"
+              accept=".pdf,.doc,.docx,.txt,image/*"
+              style={{
+                gridColumn: 'span 3',
+                fontFamily: T.mono,
+                fontSize: '0.78rem',
+              }}
+            />
+          </div>
         )}
         {showOnboard && (
           <Btn disabled={saving} onClick={handleAddStaff}>
@@ -747,37 +757,37 @@ export default function Staff() {
                 borderBottom: '1px solid rgba(196,137,42,0.2)',
               }}
             >
-            <div
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                background: profileStaff.color || T.adminAmber,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: T.display,
-                fontSize: '1.5rem',
-                color: T.adminBg,
-                overflow: 'hidden',
-              }}
-            >
-              {profileStaff.photoUrl ? (
-                <img
-                  src={profileStaff.photoUrl.startsWith('/') ? UPLOAD_BASE + profileStaff.photoUrl : profileStaff.photoUrl}
-                  alt={profileStaff.name}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    borderRadius: '50%',
-                  }}  
-                />
-              ) : (
-                profileStaff.initial ||
-                (profileStaff.name ? profileStaff.name.charAt(0) : '?')
-              )}
-            </div>
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: '50%',
+                  background: profileStaff.color || T.adminAmber,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: T.display,
+                  fontSize: '1.5rem',
+                  color: T.adminBg,
+                  overflow: 'hidden',
+                }}
+              >
+                {profileStaff.photoUrl ? (
+                  <img
+                    src={profileStaff.photoUrl.startsWith('/') ? UPLOAD_BASE + profileStaff.photoUrl : profileStaff.photoUrl}
+                    alt={profileStaff.name}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '50%',
+                    }}
+                  />
+                ) : (
+                  profileStaff.initial ||
+                  (profileStaff.name ? profileStaff.name.charAt(0) : '?')
+                )}
+              </div>
               <div>
                 <div style={{ fontWeight: 700, fontSize: '1rem' }}>
                   {profileStaff.name}
@@ -961,18 +971,18 @@ export default function Staff() {
             >
               {st.photoUrl ? (
                 <img
-                  src={st.photoUrl.startsWith('/') ? UPLOAD_BASE + st.photoUrl : st.photoUrl}
+                  src={getMediaUrl(st.photoUrl)}
                   alt={st.name}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    borderRadius: '50%',
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling?.style?.removeProperty('display');
                   }}
                 />
-              ) : (
-                st.initial || (st.name ? st.name.charAt(0) : '?')
-              )}
+              ) : null}
+              <span style={{ display: st.photoUrl ? 'none' : undefined }}>
+                {st.initial || (st.name ? st.name.charAt(0) : '?')}
+              </span>
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: '0.88rem' }}>
