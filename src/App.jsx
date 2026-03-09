@@ -56,7 +56,7 @@ function ProtectedRoute({ children }) {
 }
 
 function AppContent() {
-  const navigate = useNavigate();
+  const Navigate = useNavigate();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
@@ -79,7 +79,7 @@ function AppContent() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-    navigate("/");
+    Navigate("/");
   };
 
   // Hide Nav & Footer for admin users or on /admin routes
@@ -137,7 +137,7 @@ function AppContent() {
             <Route path="settings" element={<Settings />} />
           </Route>
 
-          <Route path="*" element={<navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
