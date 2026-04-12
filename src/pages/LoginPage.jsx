@@ -53,11 +53,10 @@ export default function LoginPage({ setUser }) {
 
                 localStorage.setItem("token", res.data.token);
                 localStorage.setItem("user", JSON.stringify(userData));
-                navigate(res.data.admin === true ? '/admin' : '/');
 
-
+                // FIX: Single navigation based on admin status (removed duplicate navigate)
                 setUser(userData);    
-                navigate('/')     
+                navigate(res.data.admin === true ? '/admin' : '/');     
             } else {
                 setErrors({ email: res.data.message || "Invalid email or password" });
             }

@@ -177,7 +177,8 @@ const Featured = () => {
 
   const fetchMenu = async () => {
     try {
-      const res = await API.get("/menu");
+      // Use /menu/user endpoint (public menu - no auth required)
+      const res = await API.get("/menu/user");
       setMenu(res.data);
       setError(null);
     } catch (err) {
@@ -196,6 +197,39 @@ const Featured = () => {
       ...(menu.food?.filter((i) => i.available !== false).slice(0, 1) ?? []),
     ]
     : [];
+
+  // FIX: Define ErrorBox inline since it's not imported
+  const ErrorBox = ({ message, onRetry }) => (
+    <div style={{ 
+      background: 'rgba(255,100,100,0.1)', 
+      border: '1px solid rgba(255,100,100,0.3)', 
+      padding: '16px', 
+      borderRadius: '8px',
+      color: '#ff6b6b',
+      fontFamily: 'inherit',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    }}>
+      <span>{message}</span>
+      {onRetry && (
+        <button 
+          onClick={onRetry}
+          style={{
+            background: 'rgba(255,100,100,0.2)',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            color: '#ff6b6b',
+            cursor: 'pointer',
+            marginLeft: '12px'
+          }}
+        >
+          Retry
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <section style={{ background: colors.ink, padding: "120px 56px" }}>

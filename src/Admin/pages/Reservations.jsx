@@ -77,7 +77,7 @@ export default function Reservations() {
       const token = getToken();
       if (!token) { showToast('Not authorized!'); return; }
 
-      await API.put(`/${id}/status`, { status, ...extra }, {
+      await API.put(`reservation/${id}/status`, { status, ...extra }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -133,7 +133,7 @@ export default function Reservations() {
       const token = getToken();
       if (!token) { showToast('Not authorized!'); return; }
 
-      await API.delete(`/${deleteTarget}/delete`, {
+      await API.delete(`/reservation/${deleteTarget}/delete`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

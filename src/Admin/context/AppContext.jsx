@@ -67,12 +67,12 @@ export function AppProvider({ children }) {
   fetchMenu();
 
   // recall every 5 seconds
-  const interval = setInterval(() => {
-    fetchMenu();
-  }, 10000);
+  // const interval = setInterval(() => {
+  //   fetchMenu();
+  // },[]);
 
-  // cleanup to prevent memory leak
-  return () => clearInterval(interval);
+  // // cleanup to prevent memory leak
+  // return () => clearInterval(interval);
 
 }, [token, user]); //showToast
 

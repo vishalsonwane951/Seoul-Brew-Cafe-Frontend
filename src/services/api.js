@@ -1,11 +1,9 @@
-// services/api.js
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://seoul-brew-cafe-backend-9d3v.onrender.com/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
 });
 
-// Request interceptor to attach token
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -15,13 +13,15 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-export const UPLOAD_BASE = "https://seoul-brew-cafe-backend-9d3v.onrender.com";
+// Derives upload base from the same env var — no duplication
+export const UPLOAD_BASE = (import.meta.env.VITE_API_URL || "http://localhost:5000/api")
+  .replace("/api", "");
+
 API.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
       console.warn("Session expired or unauthorized:", err.response?.data);
-      // Optionally: logout or redirect
     }
     return Promise.reject(err);
   }

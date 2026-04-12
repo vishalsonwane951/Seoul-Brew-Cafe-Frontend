@@ -51,7 +51,7 @@ export default function AdminLayout() {
   const safeReservations = Array.isArray(reservations)
     ? reservations
     : [];
-    console.log(`user: ${user}`)
+    console.log('user',user)
 
   // ✅ BADGES (Now cannot crash)
   const badges = {

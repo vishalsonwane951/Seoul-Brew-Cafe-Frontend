@@ -2,10 +2,10 @@ import { useApp } from '../context/AppContext';
 import { Panel, StatCard, StatsGrid, Badge, Tbl, Td, BarChart, ProgressBar } from '../components/AdminUI';
 
 const weekData = [
-  {label:'MON',label2:'₹ 0',val:0},{label:'TUE',label2:'₹ 0',val:0},
-  {label:'WED',label2:'₹ 0',val:0},{label:'THU',label2:'₹ 0',val:0},
-  {label:'FRI',label2:'₹ 0',val:0},{label:'SAT',label2:'₹ 0',val:0,highlight:true},
-  {label:'SUN',label2:'₹ 0',val:0},
+  {label:'MON',label2:'₹ 0',val:1145},{label:'TUE',label2:'₹ 0',val:1860},
+  {label:'WED',label2:'₹ 0',val:1540},{label:'THU',label2:'₹ 0',val:2457},
+  {label:'FRI',label2:'₹ 0',val:1245},{label:'SAT',label2:'₹ 0',val:3457,highlight:true},
+  {label:'SUN',label2:'₹ 0',val:864},
 ];
 
 const topItems = [
@@ -19,10 +19,10 @@ export default function Overview() {
   return (
     <div className="fade-up">
       <StatsGrid>
-        <StatCard label="Today's Revenue" value="₹ -" change="↑ 14% vs yesterday" changeType="up" />
-        <StatCard label="Orders Today"    value="  -"    change="↑ 9 more than avg"  changeType="up" />
-        <StatCard label="Avg Order Value" value="₹  -" change="↓ 3% vs last week"  changeType="down" />
-        <StatCard label="Tables Occupied" value="- /10"  change="60% capacity"        changeType="neutral" />
+        <StatCard label="Today's Revenue" value="₹ 7256" change="↑ 14% vs yesterday" changeType="up" />
+        <StatCard label="Orders Today"    value="  72"    change="↑ 9 more than avg"  changeType="up" />
+        <StatCard label="Avg Order Value" value="₹  243" change="↓ 3% vs last week"  changeType="down" />
+        <StatCard label="Tables Occupied" value="08/10"  change="60% capacity"        changeType="neutral" />
       </StatsGrid>
 
       <Panel title="Weekly Revenue">

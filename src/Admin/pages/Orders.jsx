@@ -71,6 +71,8 @@ export default function Orders() {
         }
       );
 
+      console.log('admin token', token)
+
       // ✅ Update correct order in state
       setOrders(prev =>
         prev.map(order =>

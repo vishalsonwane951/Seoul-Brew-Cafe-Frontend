@@ -12,7 +12,8 @@ export const MenuProvider = ({ children }) => {
   const fetchMenu = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/menu");
+      // FIX: Use /menu/user endpoint (updated in server.js to avoid conflict with admin routes)
+      const res = await API.get("/menu/user");
       setMenu(res.data);
       setError("");
     } catch (err) {
