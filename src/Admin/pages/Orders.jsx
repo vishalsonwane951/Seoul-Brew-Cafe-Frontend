@@ -11,6 +11,7 @@ const STATUS_NEXT = { Accepted: 'Preparing', Preparing: 'Ready', Ready: 'Served'
 const BADGE_TYPE = { Accepted: 'wait', Preparing: 'prep', Ready: 'ready', Served: 'done', Cancelled: 'cancelled', 'Out for Delivery': 'prep', 'Picked Up': 'ready' };
 
 export default function Orders() {
+
   const { role, loading } = useAuth();
   const { orders, setOrders, showToast } = useApp();
   const [filter, setFilter] = useState('all');
@@ -309,3 +310,4 @@ export default function Orders() {
     </div>
   );
 }
+

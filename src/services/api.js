@@ -1,7 +1,9 @@
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+const API = axios.create({        
+  // baseURL: "http://localhost:5000/api",
+  baseURL: "https://seoul-brew-cafe-backend.onrender.com/api",
+
 });
 
 API.interceptors.request.use(
@@ -14,7 +16,7 @@ API.interceptors.request.use(
 );
 
 // Derives upload base from the same env var — no duplication
-export const UPLOAD_BASE = (import.meta.env.VITE_API_URL || "http://localhost:5000/api")
+export const UPLOAD_BASE = (import.meta.env.VITE_API_URL || "http://locahost:500/api")
   .replace("/api", "");
 
 API.interceptors.response.use(

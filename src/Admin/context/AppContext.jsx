@@ -39,7 +39,7 @@ export function AppProvider({ children }) {
 
   const fetchMenu = async () => {
     try {
-      const res = await API.get("/menu", {
+      const res = await API.get("/menu/user", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
