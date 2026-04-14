@@ -27,19 +27,41 @@ const isImage = (val) =>
   val && (val.startsWith("data:") || val.startsWith("http"));
 
 // ─── Image Upload Widget ───────────────────────────────────────────────────
+// REPLACE THIS WHOLE BLOCK
 const ImageUpload = ({ value, onChange }) => {
   const hasImage = isImage(value);
+  const [uploading, setUploading] = useState(false);
 
-  const handleFile = (e) => {
+  const handleFile = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Image must be under 2MB");
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be under 5MB");
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => onChange(reader.result);
-    reader.readAsDataURL(file);
+
+    setUploading(true);
+    try {
+      // ✅ FIX 2: Pass file.type correctly
+      const res = await API.get(`/s3/presign?type=${encodeURIComponent(file.type)}`);
+      const { url, publicUrl } = res.data;
+
+      // ✅ FIX 3: Content-Type must exactly match what was signed
+      const uploadRes = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+
+      if (!uploadRes.ok) throw new Error(`Upload failed: ${uploadRes.status}`);
+
+      onChange(publicUrl);
+    } catch (err) {
+      console.error(err);
+      alert("Image upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -66,21 +88,22 @@ const ImageUpload = ({ value, onChange }) => {
           padding: "8px 12px",
           borderRadius: "6px",
           border: "1px dashed rgba(255,255,255,0.25)",
-          cursor: "pointer",
+          cursor: uploading ? "not-allowed" : "pointer",
           fontSize: "0.8rem",
           color: "rgba(245,240,232,0.7)",
-          transition: "border-color 0.2s",
+          opacity: uploading ? 0.6 : 1,
         }}
       >
-        {hasImage ? "Change Image" : "Upload Image"}
+        {uploading ? "Uploading…" : hasImage ? "Change Image" : "Upload Image"}
         <input
           type="file"
           accept="image/*"
           onChange={handleFile}
+          disabled={uploading}
           style={{ display: "none" }}
         />
       </label>
-      {hasImage && (
+      {hasImage && !uploading && (
         <button
           onClick={() => onChange("☕")}
           style={{
