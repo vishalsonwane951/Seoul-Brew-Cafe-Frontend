@@ -24,7 +24,18 @@ import API from "../../services/api";
 const CATS = ["coffee", "matcha", "tea", "latte", "food", "bakery"];
 
 const isImage = (val) =>
-  val && (val.startsWith("data:") || val.startsWith("http"));
+  val &&
+  (val.startsWith("data:") ||
+    val.startsWith("http://") ||
+    val.startsWith("https://") ||
+    val.startsWith("//"));
+
+// const images = [
+//   {
+//     imageUrl: ""
+
+//   }
+// ]
 
 // ─── Image Upload Widget ───────────────────────────────────────────────────
 // REPLACE THIS WHOLE BLOCK
@@ -55,7 +66,9 @@ const ImageUpload = ({ value, onChange }) => {
 
       if (!uploadRes.ok) throw new Error(`Upload failed: ${uploadRes.status}`);
 
-      onChange(publicUrl);
+      // onChange(publicUrl);
+      onChange(publicUrl.replace(/^http:\/\//, "https://"));
+
     } catch (err) {
       console.error(err);
       alert("Image upload failed. Please try again.");
@@ -150,7 +163,7 @@ export default function Menu() {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => setInventory(res.data || []))
-      .catch(() => {});
+      .catch(() => { });
   }, [token]);
 
   const filtered = (menu || []).filter(
@@ -354,13 +367,8 @@ export default function Menu() {
                   <img
                     src={m.imageUrl}
                     alt={m.title}
-                    style={{
-                      width: 38,
-                      height: 38,
-                      objectFit: "cover",
-                      borderRadius: 6,
-                      display: "block",
-                    }}
+                    crossOrigin="anonymous"   // ← add this
+                    style={{ width: 38, height: 38, objectFit: "cover", borderRadius: 6, display: "block" }}
                   />
                 ) : (
                   <span style={{ fontSize: "1.4rem" }}>
