@@ -10,25 +10,26 @@ export function AppProvider({ children }) {
   const [reservations, setReservations] = useState([]);
   const [cart, setCart] = useState([]);
 
-  // ✅ Loading states
   const [loadingMenu, setLoadingMenu] = useState(false);
   const [loadingReservations, setLoadingReservations] = useState(false);
-
   const [menuError, setMenuError] = useState(null);
-const [reservationError, setReservationError] = useState(null);
+  const [reservationError, setReservationError] = useState(null);
 
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
 
-  const [user, setUser] = useState({
-    
-    name: "Admin",
-    loggedIn: true,
-    admin: true,
-    token: "YOUR_TOKEN"
+  // ✅ FIX: Read user + token from localStorage, not hardcoded
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem("user");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   });
 
-  const token = user?.token;
+  // ✅ FIX: Always read token from localStorage via interceptor — no need to pass manually
+  const token = localStorage.getItem("token") || user?.token;
 
   // ── Toast ──────────────────────────────────────────────
   const showToast = (msg) => {
@@ -42,62 +43,61 @@ const [reservationError, setReservationError] = useState(null);
 
   // ── Fetch Menu ─────────────────────────────────────────
   const fetchMenu = async () => {
-  try {
-    setLoadingMenu(true);
-    setMenuError(null);
+    try {
+      setLoadingMenu(true);
+      setMenuError(null);
 
-    const res = await API.get("/menu/user", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      const res = await API.get("/menu/user");
 
-    setMenu((res.data || []).map(m => ({
-      _id: m._id,
-      title: m.title,
-      category: m.category,
-      price: m.price,
-      description: m.description || "",
-      allergens: m.allergens || "",
-      available: m.available,
-      sales: m.sales || 0,
-      stock: m.stock,
-      imageUrl: m.imageUrl || "☕",
-      kcal: m.kcal || 0,
-    })));
+      setMenu((res.data || []).map(m => ({
+        _id: m._id,
+        title: m.title,
+        category: m.category,
+        price: m.price,
+        description: m.description || "",
+        allergens: m.allergens || "",
+        available: m.available,
+        sales: m.sales || 0,
+        stock: m.stock,
+        imageUrl: m.imageUrl || "☕",
+        kcal: m.kcal || 0,
+        recipe: m.recipe || [],
+      })));
 
-  } catch (err) {
-    setMenuError("Failed to fetch menu");
-    showToast("Failed to fetch menu items.");
-  } finally {
-    setLoadingMenu(false);
-  }
-};
+    } catch (err) {
+      setMenuError("Failed to fetch menu");
+      showToast("Failed to fetch menu items.");
+    } finally {
+      setLoadingMenu(false);
+    }
+  };
 
   useEffect(() => {
-    if (!token || !user?.admin) return;
+    if (!token) return;
     fetchMenu();
-  }, [token, user]);
+  }, [token]);
 
   // ── Fetch Reservations ─────────────────────────────────
   const fetchReservations = async () => {
-  try {
-    setLoadingReservations(true);
-    setReservationError(null);
+    try {
+      setLoadingReservations(true);
+      setReservationError(null);
 
-    const res = await API.get("/reservations");
+      const res = await API.get("/reservations");
 
-    setReservations(
-      Array.isArray(res.data)
-        ? res.data
-        : res.data?.reservations || []
-    );
+      setReservations(
+        Array.isArray(res.data)
+          ? res.data
+          : res.data?.reservations || []
+      );
 
-  } catch (error) {
-    setReservationError("Failed to fetch reservations");
-    setReservations([]);
-  } finally {
-    setLoadingReservations(false);
-  }
-};
+    } catch (error) {
+      setReservationError("Failed to fetch reservations");
+      setReservations([]);
+    } finally {
+      setLoadingReservations(false);
+    }
+  };
 
   useEffect(() => {
     fetchReservations();
@@ -155,7 +155,7 @@ const [reservationError, setReservationError] = useState(null);
   const placeOrder = (customerName) => {
     const newOrder = {
       id: String(Date.now()).slice(-4),
-      customer: customerName || user.name,
+      customer: customerName || user?.name,
       items: cart.map(c => `${c.name}×${c.qty}`).join(', '),
       total: cartTotal,
       time: 'Just now',
@@ -173,14 +173,14 @@ const [reservationError, setReservationError] = useState(null);
     <AppContext.Provider
       value={{
         menu,
-        loadingMenu,          // ✅ exposed
+        loadingMenu,
         fetchMenu,
 
         orders,
         setOrders,
 
         reservations,
-        loadingReservations, // ✅ exposed
+        loadingReservations,
         fetchReservations,
         createReservation,
 
@@ -197,9 +197,10 @@ const [reservationError, setReservationError] = useState(null);
         placeOrder,
         toast,
         showToast,
+        setMenu,
 
         user,
-        setUser
+        setUser,
       }}
     >
       {children}

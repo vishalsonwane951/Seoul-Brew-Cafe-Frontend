@@ -17,8 +17,6 @@ import {
   selectStyle,
   textareaStyle,
 } from "../components/SharedUI";
-import { useContext } from "react";
-// import { MenuContext } from "../../context/MenuContext";
 import API from "../../services/api";
 
 const CATS = ["coffee", "matcha", "tea", "latte", "food", "bakery"];
@@ -30,15 +28,7 @@ const isImage = (val) =>
     val.startsWith("https://") ||
     val.startsWith("//"));
 
-// const images = [
-//   {
-//     imageUrl: ""
-
-//   }
-// ]
-
 // ─── Image Upload Widget ───────────────────────────────────────────────────
-// REPLACE THIS WHOLE BLOCK
 const ImageUpload = ({ value, onChange }) => {
   const hasImage = isImage(value);
   const [uploading, setUploading] = useState(false);
@@ -53,11 +43,9 @@ const ImageUpload = ({ value, onChange }) => {
 
     setUploading(true);
     try {
-      // ✅ FIX 2: Pass file.type correctly
       const res = await API.get(`/s3/presign?type=${encodeURIComponent(file.type)}`);
       const { url, publicUrl } = res.data;
 
-      // ✅ FIX 3: Content-Type must exactly match what was signed
       const uploadRes = await fetch(url, {
         method: "PUT",
         headers: { "Content-Type": file.type },
@@ -66,7 +54,7 @@ const ImageUpload = ({ value, onChange }) => {
 
       if (!uploadRes.ok) throw new Error(`Upload failed: ${uploadRes.status}`);
 
-      // onChange(publicUrl);
+      // Force https
       onChange(publicUrl.replace(/^http:\/\//, "https://"));
 
     } catch (err) {
@@ -138,13 +126,13 @@ const ImageUpload = ({ value, onChange }) => {
 
 // ─── Main Component ────────────────────────────────────────────────────────
 export default function Menu() {
-  const { menu,setMenu,fetchMenu, showToast, user } = useApp();
-  // const { menu, setMenu, fetchMenu } = useContext(MenuContext);
+  const { menu, setMenu, fetchMenu, showToast, user } = useApp();
   const [catFilter, setCatFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [inventory, setInventory] = useState([]);
 
+  // ✅ FIX: form uses imageUrl not editItem reference
   const [form, setForm] = useState({
     name: "",
     category: "coffee",
@@ -155,15 +143,13 @@ export default function Menu() {
     recipe: [],
   });
 
-  const token = user?.token || localStorage.getItem("token");
+  const token = localStorage.getItem("token") || user?.token;
 
   useEffect(() => {
     if (!token) return;
-    API.get("/inventory", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    API.get("/inventory")
       .then((res) => setInventory(res.data || []))
-      .catch(() => { });
+      .catch(() => {});
   }, [token]);
 
   const filtered = (menu || []).filter(
@@ -225,21 +211,17 @@ export default function Menu() {
       }));
 
     try {
-      const res = await API.put(
-        `/menu/${editItem._id}`,
-        {
-          title: editItem.title,
-          category: editItem.category,
-          price: Number(editItem.price),
-          description: editItem.description,
-          allergens: editItem.allergens,
-          imageUrl: editItem.imageUrl || "☕",
-          kcal: editItem.kcal || 0,
-          available: editItem.available,
-          recipe,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await API.put(`/menu/${editItem._id}`, {
+        title: editItem.title,
+        category: editItem.category,
+        price: Number(editItem.price),
+        description: editItem.description,
+        allergens: editItem.allergens,
+        imageUrl: editItem.imageUrl || "☕",
+        kcal: editItem.kcal || 0,
+        available: editItem.available,
+        recipe,
+      });
 
       setMenu((prev) =>
         prev.map((m) => (m._id !== res.data._id ? m : { ...m, ...res.data }))
@@ -256,9 +238,7 @@ export default function Menu() {
   // ── Delete ───────────────────────────────────────────────────────────────
   const del = async (id) => {
     try {
-      await API.delete(`/menu/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await API.delete(`/menu/${id}`);
       setMenu((prev) => prev.filter((item) => item._id !== id));
       fetchMenu();
       showToast("Item deleted");
@@ -270,10 +250,9 @@ export default function Menu() {
 
   // ── Toggle availability ──────────────────────────────────────────────────
   const toggl = async (itemId) => {
-    if (!user?.token || !user?.admin) return showToast("Not authorized");
-
     const item = menu.find((m) => m._id === itemId);
 
+    // Optimistic update
     setMenu((prev) =>
       prev.map((m) =>
         m._id === itemId
@@ -283,11 +262,7 @@ export default function Menu() {
     );
 
     try {
-      const res = await API.patch(
-        `/menu/${itemId}/availability`,
-        {},
-        { headers: { Authorization: `Bearer ${user.token}` } }
-      );
+      const res = await API.patch(`/menu/${itemId}/availability`, {});
       setMenu((prev) =>
         prev.map((m) =>
           m._id === itemId
@@ -299,6 +274,7 @@ export default function Menu() {
     } catch (err) {
       console.error(err);
       showToast("Failed to update availability");
+      // Revert
       setMenu((prev) =>
         prev.map((m) =>
           m._id === itemId
@@ -361,14 +337,19 @@ export default function Menu() {
         >
           {filtered.map((m) => (
             <tr key={m._id || m.id}>
-              {/* ── Image / emoji thumbnail ── */}
               <Td>
                 {isImage(m.imageUrl) ? (
                   <img
                     src={m.imageUrl}
                     alt={m.title}
-                    crossOrigin="anonymous"   // ← add this
-                    style={{ width: 38, height: 38, objectFit: "cover", borderRadius: 6, display: "block" }}
+                    crossOrigin="anonymous"
+                    style={{
+                      width: 38,
+                      height: 38,
+                      objectFit: "cover",
+                      borderRadius: 6,
+                      display: "block",
+                    }}
                   />
                 ) : (
                   <span style={{ fontSize: "1.4rem" }}>
@@ -376,7 +357,6 @@ export default function Menu() {
                   </span>
                 )}
               </Td>
-
               <Td bold>{m.title}</Td>
               <Td mono>{m.category}</Td>
               <Td amber>₹{m.price.toLocaleString()}</Td>
@@ -473,7 +453,7 @@ export default function Menu() {
             />
           </FormGroup>
 
-          {/* ── IMAGE UPLOAD (replaces emoji input) ── */}
+          {/* ✅ FIX: was using editItem.imageUrl — now correctly uses form */}
           <FormGroup label="Image" style={{ gridColumn: "1 / -1" }}>
             <ImageUpload
               value={form.imageUrl}
@@ -676,7 +656,6 @@ export default function Menu() {
                 />
               </FormGroup>
 
-              {/* ── IMAGE UPLOAD (replaces emoji input) ── */}
               <FormGroup label="Image" style={{ gridColumn: "1 / -1" }}>
                 <ImageUpload
                   value={editItem.imageUrl}
