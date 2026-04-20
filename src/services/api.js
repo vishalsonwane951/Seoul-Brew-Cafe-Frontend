@@ -3,7 +3,9 @@ import axios from "axios";
 const API = axios.create({        
   // baseURL: "http://localhost:5000/api",
   // baseURL: "https://seoul-brew-cafe-backend.onrender.com/api",
-  baseURL: "https://seoul-brew-cafe-backend-1.onrender.com/api",
+  // baseURL: "https://seoul-brew-cafe-backend-1.onrender.com/api",
+  baseURL: "http://3.109.183.192:5000/api",
+  //  3.109.183.192    
 
 });
 

@@ -46,6 +46,7 @@ export default function LoginPage({ setUser }) {
 
             if (res.data.token) {
                 const userData = {
+                    _id: res.data._id,
                     name: res.data.name,
                     email: res.data.email,
                     admin: res.data.admin,

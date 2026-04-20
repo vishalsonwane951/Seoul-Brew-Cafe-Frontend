@@ -16,6 +16,7 @@ const topItems = [
 
 export default function Overview() {
   const { orders } = useApp();
+  const safeOrders = Array.isArray(orders) ? orders : [];
   return (
     <div className="fade-up">
       <StatsGrid>
@@ -32,7 +33,7 @@ export default function Overview() {
       <div style={{display:'grid',gridTemplateColumns:'1fr 1.4fr',gap:20}}>
         <Panel title="Live Orders">
   <Tbl headers={['#','Customer','Items','Status']}>
-    {(orders || []).slice(0, 5).map((o) => (
+    {safeOrders.slice(0, 5).map((o) => (
       <tr key={o.id} style={{ cursor: 'default' }}>
         <Td amber>#{o.id}</Td>
         <Td bold>{o.customer}</Td>

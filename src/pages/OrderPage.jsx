@@ -2,11 +2,13 @@ import { useContext, useState, useEffect } from "react";
 import { colors, fonts } from "../tokens";
 import Eyebrow from "../components/Eyebrow";
 import Toast from "../components/Toast";
-import { MenuContext } from "../context/MenuContext";
+// import { MenuContext } from "../context/MenuContext";
 import { CartContext } from "../context/CartContext";
 import API from "../services/api.js";
 import socket from "../services/Soket.js";
 import axios from "axios";
+import { useApp } from "../Admin/context/AppContext.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 
 /* ===========================
    Order Row
@@ -230,8 +232,12 @@ const Cart = ({ cartArr, total, orderType, onChangeQty, onPlace, placing }) => {
 const ORDER_TYPES = ["Dine-In", "Takeaway", "Delivery"];
 
 const OrderPage = () => {
-  const { menu, loading: menuLoading, error } = useContext(MenuContext);
+  // const { menu, loading: menuLoading, error } = useContext(MenuContext);
+  const { menu, loadingMenu: menuLoading, menuError: error } = useApp();
+  const { user } = useAuth();
   const { cart, addToCart, changeQty, clearCart } = useContext(CartContext);
+
+  console.log("USER:", user);
 
   const [currentOrderId, setCurrentOrderId] = useState(null);
   const [currentStatus, setCurrentStatus] = useState(null);
@@ -268,21 +274,22 @@ const OrderPage = () => {
     }
 
     const payload = {
-      orderType,
-      items: cartArr.map((i) => ({
-        menuItemId: i._id,
-        title: i.title,
-        name: localStorage.getItem('name'),
-        email: localStorage.getItem("email"),
-        quantity: Number(i.qty) || 0,
-        price: Number(i.price) || 0,
-      })),
-      total: total,
-    };
-
+  user: user?._id,      // ✅ ROOT
+  name: user?.name,     // ✅ ROOT
+  email: user?.email,   // ✅ ROOT
+  orderType,
+  items: cartArr.map((i) => ({
+    menuItemId: i._id,
+    title: i.title,
+    quantity: Number(i.qty) || 0,
+    price: Number(i.price) || 0,
+  })),
+  total,
+};
     console.log("cartArr:", cartArr);
     console.log("items:", payload.items);
-    console.log("totalAmount:", payload.totalAmount);
+    // console.log("totalAmount:", payload.totalAmount);
+    console.log("total:", payload.total);
 
     try {
 

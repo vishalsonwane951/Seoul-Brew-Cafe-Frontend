@@ -49,8 +49,8 @@ export default function Orders() {
   return () => clearInterval(interval);
 }, [user, token, role, loading, setOrders]);
 
-  const filtered = (orders || []).filter(o => {
-    if (!o || !(o._id || o.id)) return false; // skip invalid
+const filtered = (Array.isArray(orders) ? orders : []).filter(o => {
+      if (!o || !(o._id || o.id)) return false; // skip invalid
     const statusMatch = filter === 'all' || (o.status && o.status.toLowerCase() === filter);
     const searchMatch =
       (o.customer && o.customer.toLowerCase().includes(search.toLowerCase())) ||
@@ -112,16 +112,36 @@ export default function Orders() {
     } catch (err) {
       showToast(err.response?.data?.message || 'Failed to cancel order');
     }
+    
   };
 
+  const safeOrders = Array.isArray(orders) ? orders : [];
+
+const stats = {
+  waiting: 0,
+  preparing: 0,
+  ready: 0,
+  done: 0
+};
+
+safeOrders.forEach(o => {
+  if (!o?.status) return;
+
+  if (o.status === "Accepted") stats.waiting++;
+  if (o.status === "Preparing") stats.preparing++;
+  if (o.status === "Ready") stats.ready++;
+  if (["Served", "Delivered", "Picked Up"].includes(o.status)) stats.done++;
+});
+
   return (
+    
     <div className="fade-up">
       <StatsGrid>
-        <StatCard label="Waiting" value={(orders || []).filter(o => o.status === 'Accepted').length} valueColor="#e08a30" />
-        <StatCard label="Preparing" value={(orders || []).filter(o => o.status === 'Preparing').length} valueColor={T.adminAmber} />
-        <StatCard label="Ready" value={(orders || []).filter(o => o.status === 'Ready').length} valueColor="#4caf7a" />
-        <StatCard label="Done Today" value={(orders || []).filter(o => ['Served', 'Delivered', 'Picked Up'].includes(o.status)).length} />
-      </StatsGrid>
+  <StatCard label="Waiting" value={stats.waiting} valueColor="#e08a30" />
+  <StatCard label="Preparing" value={stats.preparing} valueColor={T.adminAmber} />
+  <StatCard label="Ready" value={stats.ready} valueColor="#4caf7a" />
+  <StatCard label="Done Today" value={stats.done} />
+</StatsGrid>
 
       <Panel title="All Orders" action={
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

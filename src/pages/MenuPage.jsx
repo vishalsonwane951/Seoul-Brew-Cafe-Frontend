@@ -2,7 +2,8 @@ import { useContext, useState } from "react";
 import { colors, fonts } from "../tokens";
 import Eyebrow from "../components/Eyebrow";
 import MenuCard from "../components/MenuCard";
-import { MenuContext } from "../context/MenuContext";
+// import { MenuContext } from "../context/MenuContext";
+import { useApp } from "../Admin/context/AppContext";
 
 const TabBtn = ({ label, count, active, onClick }) => {
   const [h, setH] = useState(false);
@@ -41,21 +42,25 @@ const TabBtn = ({ label, count, active, onClick }) => {
 };
 
 const MenuPage = () => {
-  const { menu, loading, error, fetchMenu } = useContext(MenuContext);
-  const [activeTab, setActiveTab] = useState("matcha");
+  // const { menu, loading, error, fetchMenu } = useContext(MenuContext);
+  const { menu } = useApp();
 
+  console.log("menuuu", menu)
+// const menu = Array.isArray(MenuItem) ? MenuItem : [];
+  const [activeTab, setActiveTab] = useState("matcha");
   const tabs = [...new Set(menu.map(item => item.category.toLowerCase()))]; 
   const items = menu.filter(item => item.category.toLowerCase() === activeTab.toLowerCase());
   const available = items.filter((i) => i.stock === true);
   const unavailable = items.filter((i) => i.stock === false);
 
-  if (loading) return <div style={{ padding: "32px" }}>Loading menu…</div>;
-  if (error)
-    return (
-      <div style={{ padding: "32px", color: "red" }}>
-        {error} <button onClick={fetchMenu}>Retry</button>
-      </div>
-    );
+
+  // if (loading) return <div style={{ padding: "32px" }}>Loading menu…</div>;
+  // if (error)
+  //   return (
+  //     <div style={{ padding: "32px", color: "red" }}>
+  //       {error} <button onClick={fetchMenu}>Retry</button>
+  //     </div>
+  //   );
 
   return (
     <div style={{ paddingTop: "72px" }}>

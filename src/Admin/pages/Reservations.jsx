@@ -9,15 +9,16 @@ import initSocket from '../../services/Soket.js';
 const TABLES = ['T-01', 'T-02', 'T-03', 'T-04', 'T-05', 'T-06', 'T-07', 'T-08', 'T-09', 'T-10'];
 const TABLE_COLORS = {
   Approved: { bg: 'rgba(42,92,63,0.3)', border: 'rgba(76,175,122,0.4)', text: '#4caf7a' },
-  Seated:   { bg: 'rgba(42,92,63,0.3)', border: 'rgba(76,175,122,0.4)', text: '#4caf7a' },
+  Seated: { bg: 'rgba(42,92,63,0.3)', border: 'rgba(76,175,122,0.4)', text: '#4caf7a' },
   Reserved: { bg: 'rgba(196,137,42,0.15)', border: 'rgba(196,137,42,0.3)', text: T.adminAmber },
   Incoming: { bg: 'rgba(196,137,42,0.15)', border: 'rgba(196,137,42,0.3)', text: T.adminAmber },
-  Pending:  { bg: 'rgba(196,137,42,0.15)', border: 'rgba(196,137,42,0.3)', text: T.adminAmber },
-  Free:     { bg: 'rgba(245,240,232,0.05)', border: 'rgba(245,240,232,0.1)', text: 'rgba(245,240,232,0.35)' },
+  Pending: { bg: 'rgba(196,137,42,0.15)', border: 'rgba(196,137,42,0.3)', text: T.adminAmber },
+  Free: { bg: 'rgba(245,240,232,0.05)', border: 'rgba(245,240,232,0.1)', text: 'rgba(245,240,232,0.35)' },
 };
 
 export default function Reservations() {
   const { reservations, setReservations, fetchReservations, showToast, createReservation } = useApp();
+  const safeReservations = (Array.isArray(reservations) ? reservations : []).filter(Boolean);
 
   const [addOpen, setAddOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -56,19 +57,19 @@ export default function Reservations() {
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   const occupiedTables = (date, excludeId = null) =>
-    reservations
-      .filter(r =>
-        r._id !== excludeId &&
-        !FREE_STATUSES.includes(r.status) &&
-        r.table &&
-        r.date?.split('T')[0] === date
-      )
-      .map(r => r.table);
+  safeReservations
+    .filter(r =>
+      r._id !== excludeId &&
+      !FREE_STATUSES.includes(r.status) &&
+      r.table &&
+      r.date?.split('T')[0] === date
+    )
+    .map(r => r.table);
 
-  const sortedReservations = [...(reservations || [])]
-    .sort((a, b) => (a._id && b._id ? (b._id > a._id ? 1 : -1) : 0))
-    .filter(r => (r.date ? r.date.split('T')[0] : '') === selectedDate);
-
+const sortedReservations = safeReservations
+  .sort((a, b) => (a?._id && b?._id ? (b._id > a._id ? 1 : -1) : 0))
+  .filter(r => r?.date?.split('T')[0] === selectedDate);
+  
   // ── Status update ──────────────────────────────────────────────────────────
   const TOAST = { Approved: 'Reservation approved!', Cancelled: 'Reservation cancelled', Done: 'Table marked as Done!' };
 
@@ -77,7 +78,7 @@ export default function Reservations() {
       const token = getToken();
       if (!token) { showToast('Not authorized!'); return; }
 
-      await API.put(`reservation/${id}/status`, { status, ...extra }, {
+      await API.put(`/${id}/status`, { status, ...extra }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -133,7 +134,7 @@ export default function Reservations() {
       const token = getToken();
       if (!token) { showToast('Not authorized!'); return; }
 
-      await API.delete(`/reservation/${deleteTarget}/delete`, {
+      await API.delete(`/${deleteTarget}/delete`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -228,21 +229,37 @@ export default function Reservations() {
 
   // ── Table map ──────────────────────────────────────────────────────────────
   const tableStatusMap = TABLES.map(t => {
-    const res = reservations.find(r =>
+    const res = safeReservations.find(r =>
+      r &&
       r.table === t &&
       !FREE_STATUSES.includes(r.status) &&
-      (r.date ? r.date.split('T')[0] : '') === selectedDate
+      r.date?.split('T')[0] === selectedDate
     );
+
     return { id: t, status: res ? res.status : 'Free' };
   });
 
   return (
     <div className="fade-up">
       <StatsGrid>
-        <StatCard label="Today Total" value={reservations?.length || 0} />
-        <StatCard label="Confirmed" value={reservations?.filter(r => r.status === 'Approved' || r.status === 'Seated').length || 0} valueColor="#4caf7a" />
-        <StatCard label="Pending" value={reservations?.filter(r => r.status === 'Pending').length || 0} valueColor={T.adminAmber} />
-        <StatCard label="Total Guests" value={reservations?.reduce((a, r) => a + (Number(r.guests) || 0), 0) || 0} />
+        <StatCard label="Today Total" value={safeReservations.length} />
+
+        <StatCard
+          label="Confirmed"
+          value={safeReservations.filter(r => r?.status === 'Approved' || r?.status === 'Seated').length}
+          valueColor="#4caf7a"
+        />
+
+        <StatCard
+          label="Pending"
+          value={safeReservations.filter(r => r?.status === 'Pending').length}
+          valueColor={T.adminAmber}
+        />
+
+        <StatCard
+          label="Total Guests"
+          value={safeReservations.reduce((a, r) => a + (Number(r?.guests) || 0), 0)}
+        />
       </StatsGrid>
 
       <Panel title="Reservations" action={
@@ -288,7 +305,8 @@ export default function Reservations() {
                 key={t.id}
                 onClick={() => {
                   if (t.status === 'Free') return;
-                  const res = reservations.find(r =>
+                  const res = safeReservations.find(r =>
+                    r &&
                     r.table === t.id &&
                     !FREE_STATUSES.includes(r.status) &&
                     r.date?.split('T')[0] === selectedDate

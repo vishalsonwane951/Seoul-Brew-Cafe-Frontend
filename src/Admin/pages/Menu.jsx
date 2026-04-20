@@ -18,7 +18,7 @@ import {
   textareaStyle,
 } from "../components/SharedUI";
 import { useContext } from "react";
-import { MenuContext } from "../../context/MenuContext";
+// import { MenuContext } from "../../context/MenuContext";
 import API from "../../services/api";
 
 const CATS = ["coffee", "matcha", "tea", "latte", "food", "bakery"];
@@ -138,8 +138,8 @@ const ImageUpload = ({ value, onChange }) => {
 
 // ─── Main Component ────────────────────────────────────────────────────────
 export default function Menu() {
-  const { showToast, user } = useApp();
-  const { menu, setMenu, fetchMenu } = useContext(MenuContext);
+  const { menu,setMenu,fetchMenu, showToast, user } = useApp();
+  // const { menu, setMenu, fetchMenu } = useContext(MenuContext);
   const [catFilter, setCatFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);

@@ -1,27 +1,34 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import axios from 'axios';
 import API from '../../services/api';
 
 const AppContext = createContext({});
 export const useApp = () => useContext(AppContext);
 
 export function AppProvider({ children }) {
-  const [menuItems, setMenuItems] = useState([]);
+  const [menu, setMenu] = useState([]);
   const [orders, setOrders] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [cart, setCart] = useState([]);
+
+  // ✅ Loading states
+  const [loadingMenu, setLoadingMenu] = useState(false);
+  const [loadingReservations, setLoadingReservations] = useState(false);
+
+  const [menuError, setMenuError] = useState(null);
+const [reservationError, setReservationError] = useState(null);
+
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
-  // const [user, setUser] = useState({ name: 'Guest', loggedIn: false, role: 'guest' });
 
   const [user, setUser] = useState({
-  name: "Admin",
-  loggedIn: true,
-  admin: true,
-  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTlkYjEwYzhmYmRjMDQ5ZTBiMDdmNWMiLCJlbWFpbCI6InZpc2hhbHNvbndhbmU5NTFAZ21haWwuY29tIiwiYWRtaW4iOnRydWUsImlhdCI6MTc3MjAzODYyNSwiZXhwIjoxNzcyNjQzNDI1fQ.xdcItDJpvslsXQlU6txeBDNwP456nwhXe347zkpRv5g"  // <-- must be a real token issued by your backend
-});
+    
+    name: "Admin",
+    loggedIn: true,
+    admin: true,
+    token: "YOUR_TOKEN"
+  });
 
-  const token = user?.token; // ensure you store the auth token in user object
+  const token = user?.token;
 
   // ── Toast ──────────────────────────────────────────────
   const showToast = (msg) => {
@@ -34,99 +41,117 @@ export function AppProvider({ children }) {
   };
 
   // ── Fetch Menu ─────────────────────────────────────────
-  useEffect(() => {
-  if (!token || !user || !user.admin) return;
-
   const fetchMenu = async () => {
-    try {
-      const res = await API.get("/menu/user", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setMenuItems(
-        res.data.map((m) => ({
-          _id: m._id,
-          title: m.title,
-          category: m.category,
-          price: m.price,
-          description: m.description || "",
-          allergens: m.allergens || "",
-          available: m.available,
-          sales: m.sales || 0,
-          stock: m.stock,
-          imageUrl: m.imageUrl || "☕",
-          kcal: m.kcal || 0,
-        }))
-      );
-    } catch (err) {
-      showToast("Failed to fetch menu items.");
-    }
-  };
-
-  // call immediately first time
-  fetchMenu();
-
-  // recall every 5 seconds
-  // const interval = setInterval(() => {
-  //   fetchMenu();
-  // },[]);
-
-  // // cleanup to prevent memory leak
-  // return () => clearInterval(interval);
-
-}, [token, user]); //showToast
-
-  // Reservation
-
-const fetchReservations = async () => {
   try {
-    const res = await API.get("/reservations");
+    setLoadingMenu(true);
+    setMenuError(null);
 
-      setReservations(res.data);
-    
+    const res = await API.get("/menu/user", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-  } catch (error) {
-    console.error("Fetch reservations error:", error);
+    setMenu((res.data || []).map(m => ({
+      _id: m._id,
+      title: m.title,
+      category: m.category,
+      price: m.price,
+      description: m.description || "",
+      allergens: m.allergens || "",
+      available: m.available,
+      sales: m.sales || 0,
+      stock: m.stock,
+      imageUrl: m.imageUrl || "☕",
+      kcal: m.kcal || 0,
+    })));
+
+  } catch (err) {
+    setMenuError("Failed to fetch menu");
+    showToast("Failed to fetch menu items.");
+  } finally {
+    setLoadingMenu(false);
   }
 };
-useEffect(() => {
-  fetchReservations();
-}, []);
 
-const createReservation = async (formData) => {
+  useEffect(() => {
+    if (!token || !user?.admin) return;
+    fetchMenu();
+  }, [token, user]);
+
+  // ── Fetch Reservations ─────────────────────────────────
+  const fetchReservations = async () => {
   try {
-    const res = await API.post("/reservations",formData);
+    setLoadingReservations(true);
+    setReservationError(null);
+
+    const res = await API.get("/reservations");
+
+    setReservations(
+      Array.isArray(res.data)
+        ? res.data
+        : res.data?.reservations || []
+    );
+
+  } catch (error) {
+    setReservationError("Failed to fetch reservations");
+    setReservations([]);
+  } finally {
+    setLoadingReservations(false);
+  }
+};
+
+  useEffect(() => {
+    fetchReservations();
+  }, []);
+
+  // ── Create Reservation ─────────────────────────────────
+  const createReservation = async (formData) => {
+    try {
+      const res = await API.post("/reservations", formData);
 
       setReservations(prev => [
-        res.data.reservation,
-        ...prev
-      ]);
+        res.data?.reservation,
+        ...(Array.isArray(prev) ? prev : [])
+      ].filter(Boolean));
 
       showToast("Reservation added!");
       return true;
-    
 
-  } catch (error) {
-    showToast("Failed to add reservation");
-    return false;
-  }
-};
-  // ── Cart Handlers ───────────────────────────────────────
+    } catch (error) {
+      showToast("Failed to add reservation");
+      return false;
+    }
+  };
+
+  // ── Cart Handlers ──────────────────────────────────────
   const addToCart = (item, qty = 1) => {
     setCart(prev => {
       const existing = prev.find(c => c.id === item.id);
-      if (existing) return prev.map(c => c.id === item.id ? { ...c, qty: c.qty + qty } : c);
+      if (existing) {
+        return prev.map(c =>
+          c.id === item.id ? { ...c, qty: c.qty + qty } : c
+        );
+      }
       return [...prev, { ...item, qty }];
     });
     showToast(`${item.name} added to cart!`);
   };
 
-  const removeFromCart = (id) => setCart(prev => prev.filter(c => c.id !== id));
-  const updateCartQty = (id, qty) => setCart(prev => qty <= 0 ? prev.filter(c => c.id !== id) : prev.map(c => c.id === id ? { ...c, qty } : c));
+  const removeFromCart = (id) =>
+    setCart(prev => prev.filter(c => c.id !== id));
+
+  const updateCartQty = (id, qty) =>
+    setCart(prev =>
+      qty <= 0
+        ? prev.filter(c => c.id !== id)
+        : prev.map(c => c.id === id ? { ...c, qty } : c)
+    );
+
   const clearCart = () => setCart([]);
+
   const cartTotal = cart.reduce((a, c) => a + c.price * c.qty, 0);
   const cartCount = cart.reduce((a, c) => a + c.qty, 0);
 
+  // ── Place Order ────────────────────────────────────────
   const placeOrder = (customerName) => {
     const newOrder = {
       id: String(Date.now()).slice(-4),
@@ -137,6 +162,7 @@ const createReservation = async (formData) => {
       status: 'Waiting',
       table: 'Takeout',
     };
+
     setOrders(prev => [newOrder, ...prev]);
     clearCart();
     showToast('Order placed! 🎉');
@@ -144,14 +170,38 @@ const createReservation = async (formData) => {
   };
 
   return (
-    <AppContext.Provider value={{
-      menuItems, setMenuItems,
-      orders, setOrders,
-      reservations, setReservations,fetchReservations,createReservation,
-      cart, addToCart, removeFromCart, updateCartQty, clearCart, cartTotal, cartCount,
-      placeOrder, toast, showToast,
-      user, setUser
-    }}>
+    <AppContext.Provider
+      value={{
+        menu,
+        loadingMenu,          // ✅ exposed
+        fetchMenu,
+
+        orders,
+        setOrders,
+
+        reservations,
+        loadingReservations, // ✅ exposed
+        fetchReservations,
+        createReservation,
+
+        cart,
+        addToCart,
+        removeFromCart,
+        updateCartQty,
+        clearCart,
+        cartTotal,
+        cartCount,
+        reservationError,
+        menuError,
+
+        placeOrder,
+        toast,
+        showToast,
+
+        user,
+        setUser
+      }}
+    >
       {children}
     </AppContext.Provider>
   );
