@@ -40,8 +40,10 @@
 
 import axios from "axios";
 
+const VITE_API_URL = 'https://seoul-brew-cafe-backend-1.onrender.com/api'
+
 const API = axios.create({        
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: VITE_API_URL || "http://localhost:5000/api",
 });
 
 API.interceptors.request.use(
@@ -53,7 +55,7 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-export const UPLOAD_BASE = (import.meta.env.VITE_API_URL || "http://localhost:5000/api")
+export const UPLOAD_BASE = (VITE_API_URL || "http://localhost:5000/api")
   .replace("/api", "");
 
 API.interceptors.response.use(
