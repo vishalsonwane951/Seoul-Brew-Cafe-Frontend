@@ -72,10 +72,12 @@ export function AppProvider({ children }) {
     }
   };
 
+  // Menu is public — browsing it never requires login. Fetch once on
+  // mount regardless of auth state (previously this was gated behind
+  // `if (!token) return`, which left the menu empty for guests).
   useEffect(() => {
-    if (!token) return;
     fetchMenu();
-  }, [token]);
+  }, []);
 
   // ── Fetch Reservations ─────────────────────────────────
   const fetchReservations = async () => {
@@ -152,7 +154,19 @@ export function AppProvider({ children }) {
   const cartCount = cart.reduce((a, c) => a + c.qty, 0);
 
   // ── Place Order ────────────────────────────────────────
+  // Login is required here — and only here — not for browsing the menu
+  // or adding items to the cart.
   const placeOrder = (customerName) => {
+    if (!token || !user) {
+      showToast('Please log in to place an order.');
+      return null;
+    }
+
+    if (cart.length === 0) {
+      showToast('Your cart is empty.');
+      return null;
+    }
+
     const newOrder = {
       id: String(Date.now()).slice(-4),
       customer: customerName || user?.name,
