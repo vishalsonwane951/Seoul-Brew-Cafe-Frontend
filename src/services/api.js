@@ -40,7 +40,9 @@
 
 import axios from "axios";
 
-const VITE_API_URL = 'https://seoul-brew-cafe-backend-1.onrender.com/api'
+// const VITE_API_URL = 'https://seoul-brew-cafe-backend-1.onrender.com/api'
+// const VITE_API_URL = 'https://ec2-3-109-183-192.ap-south-1.compute.amazonaws.com:5000/api'
+const VITE_API_URL = 'http://localhost:5000/api'
 
 const API = axios.create({        
   baseURL: VITE_API_URL || "http://localhost:5000/api",

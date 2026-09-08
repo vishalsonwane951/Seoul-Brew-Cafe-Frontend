@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { C } from "../constants";
-import API from '../services/api'
+import API from '../services/api';
 import axios from "axios";
 import {
     useGlobalStyles,
@@ -11,6 +11,17 @@ import {
     PrimaryBtn,
 } from "../components/SharedComponents";
 import { useNavigate } from "react-router-dom";
+
+/* ── tiny hook ── */
+const useBreakpoint = () => {
+    const [w, setW] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
+    useEffect(() => {
+        const fn = () => setW(window.innerWidth);
+        window.addEventListener("resize", fn);
+        return () => window.removeEventListener("resize", fn);
+    }, []);
+    return { isMobile: w < 768 };
+};
 
 /* ── Eye icons ── */
 const EyeOpen = () => (
@@ -60,6 +71,7 @@ function PasswordField({ label, placeholder, value, onChange, error }) {
                         fontFamily: "'DM Sans',sans-serif", fontSize: "0.9rem",
                         color: C.espresso, outline: "none",
                         transition: "border-color 0.22s, box-shadow 0.22s",
+                        boxSizing: "border-box",
                     }}
                 />
                 <button
@@ -80,10 +92,7 @@ function PasswordField({ label, placeholder, value, onChange, error }) {
                 </button>
             </div>
             {error && (
-                <p style={{
-                    fontSize: "0.71rem", color: "#c0392b",
-                    marginTop: 4, fontFamily: "'DM Sans',sans-serif",
-                }}>
+                <p style={{ fontSize: "0.71rem", color: "#c0392b", marginTop: 4, fontFamily: "'DM Sans',sans-serif" }}>
                     {error}
                 </p>
             )}
@@ -94,14 +103,9 @@ function PasswordField({ label, placeholder, value, onChange, error }) {
 /*  Success screen  */
 function SuccessScreen({ onGoToLogin }) {
     return (
-        <div style={{
-            textAlign: "center", animation: "sb-fadeUp 0.4s ease", padding: "48px 0",
-        }}>
+        <div style={{ textAlign: "center", animation: "sb-fadeUp 0.4s ease", padding: "48px 0" }}>
             <div style={{ fontSize: "3.2rem", marginBottom: 16 }}>☕</div>
-            <h2 style={{
-                fontFamily: "'Playfair Display',serif", fontSize: "1.75rem",
-                color: C.espresso, marginBottom: 10,
-            }}>
+            <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.75rem", color: C.espresso, marginBottom: 10 }}>
                 Account Created!
             </h2>
             <p style={{
@@ -120,7 +124,8 @@ function SuccessScreen({ onGoToLogin }) {
                     fontFamily: "'DM Sans',sans-serif", fontSize: "0.78rem",
                     fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase",
                     transition: "background 0.3s",
-                }}>
+                }}
+            >
                 Sign In Now
             </button>
         </div>
@@ -129,6 +134,8 @@ function SuccessScreen({ onGoToLogin }) {
 
 export default function RegisterPage({ onLoginSuccess }) {
     useGlobalStyles();
+    const navigate = useNavigate();
+    const { isMobile } = useBreakpoint();
 
     const [form, setForm] = useState({
         firstName: "",
@@ -154,32 +161,22 @@ export default function RegisterPage({ onLoginSuccess }) {
         const errs = {};
         if (!form.firstName.trim()) errs.firstName = "Required";
         if (!form.lastName.trim()) errs.lastName = "Required";
-        if (!form.email)
-            errs.email = "Email is required";
-        else if (!/\S+@\S+\.\S+/.test(form.email))
-            errs.email = "Invalid email";
-        if (!form.phone)
-            errs.phone = "Phone number is required";
-        if (!form.password)
-            errs.password = "Password is required";
-        else if (form.password.length < 8)
-            errs.password = "Min. 8 characters";
-        if (!form.confirmPassword)
-            errs.confirmPassword = "Please confirm your password";
-        else if (form.password !== form.confirmPassword)
-            errs.confirmPassword = "Passwords do not match";
-        if (!form.agreeToTerms)
-            errs.agreeToTerms = "You must agree to the terms to continue";
+        if (!form.email) errs.email = "Email is required";
+        else if (!/\S+@\S+\.\S+/.test(form.email)) errs.email = "Invalid email";
+        if (!form.phone) errs.phone = "Phone number is required";
+        if (!form.password) errs.password = "Password is required";
+        else if (form.password.length < 8) errs.password = "Min. 8 characters";
+        if (!form.confirmPassword) errs.confirmPassword = "Please confirm your password";
+        else if (form.password !== form.confirmPassword) errs.confirmPassword = "Passwords do not match";
+        if (!form.agreeToTerms) errs.agreeToTerms = "You must agree to the terms to continue";
         return errs;
     };
 
     const handleSubmit = async () => {
-        
         const errs = validate();
         if (Object.keys(errs).length) { setErrors(errs); return; }
         setErrors({});
         setLoading(true);
-
         try {
             const payload = {
                 firstName: form.firstName,
@@ -190,41 +187,21 @@ export default function RegisterPage({ onLoginSuccess }) {
                 confirmPassword: form.confirmPassword,
                 agreeToTerms: form.agreeToTerms,
             };
-
             const res = await API.post("/register", payload);
-
-            if (res.data.token) {
-                localStorage.setItem("token", res.data.token);
-            }
-
+            if (res.data.token) localStorage.setItem("token", res.data.token);
             setSuccess(true);
-
-            if (onLoginSuccess) {
-                onLoginSuccess({
-                    name: res.data.user?.firstName || form.firstName,
-                });
-            }
-
+            if (onLoginSuccess) onLoginSuccess({ name: res.data.user?.firstName || form.firstName });
         } catch (error) {
-            setErrors({
-                email:
-                    error.response?.data?.message ||
-                    "Registration failed. Try again.",
-            });
+            setErrors({ email: error.response?.data?.message || "Registration failed. Try again." });
         } finally {
             setLoading(false);
         }
     };
-        const navigate = useNavigate()
 
     if (success) {
         return (
-            <div style={{
-                display: "flex", minHeight: "100vh",
-                fontFamily: "'DM Sans',sans-serif",
-                background: C.dark, overflow: "hidden",
-            }}>
-                <BrandPanel />
+            <div style={{ display: "flex", minHeight: "100vh", fontFamily: "'DM Sans',sans-serif", background: C.dark, overflow: "hidden" }}>
+                {!isMobile && <BrandPanel />}
                 <FormPanel>
                     <SuccessScreen onGoToLogin={() => navigate('/login')} />
                 </FormPanel>
@@ -233,12 +210,9 @@ export default function RegisterPage({ onLoginSuccess }) {
     }
 
     return (
-        <div style={{
-            display: "flex", minHeight: "100vh",
-            fontFamily: "'DM Sans',sans-serif",
-            background: C.dark, overflow: "hidden",
-        }}>
-            <BrandPanel />
+        <div style={{ display: "flex", minHeight: "100vh", fontFamily: "'DM Sans',sans-serif", background: C.dark, overflow: "hidden" }}>
+            {/* BrandPanel hidden on mobile */}
+            {!isMobile && <BrandPanel />}
 
             <FormPanel>
                 <FormHeading
@@ -246,88 +220,38 @@ export default function RegisterPage({ onLoginSuccess }) {
                     subtitle="Create your account and start your coffee journey"
                 />
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                    <Field
-                        label="First Name"
-                        placeholder="Minji"
-                        value={form.firstName}
-                        onChange={set("firstName")}
-                        error={errors.firstName}
-                    />
-                    <Field
-                        label="Last Name"
-                        placeholder="Kim"
-                        value={form.lastName}
-                        onChange={set("lastName")}
-                        error={errors.lastName}
-                    />
+                {/* First + Last — single column on mobile */}
+                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+                    <Field label="First Name" placeholder="Minji" value={form.firstName} onChange={set("firstName")} error={errors.firstName} />
+                    <Field label="Last Name" placeholder="Kim" value={form.lastName} onChange={set("lastName")} error={errors.lastName} />
                 </div>
 
-                <Field
-                    label="Email Address"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={form.email}
-                    onChange={set("email")}
-                    error={errors.email}
-                />
+                <Field label="Email Address" type="email" placeholder="you@example.com" value={form.email} onChange={set("email")} error={errors.email} />
+                <Field label="Phone Number" type="tel" placeholder="+82 10 0000 0000" value={form.phone} onChange={set("phone")} error={errors.phone} />
 
-                <Field
-                    label="Phone Number"
-                    type="tel"
-                    placeholder="+82 10 0000 0000"
-                    value={form.phone}
-                    onChange={set("phone")}
-                    error={errors.phone}
-                />
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                    <PasswordField
-                        label="Password"
-                        placeholder="Min. 8 chars"
-                        value={form.password}
-                        onChange={set("password")}
-                        error={errors.password}
-                    />
-                    <PasswordField
-                        label="Confirm"
-                        placeholder="••••••••"
-                        value={form.confirmPassword}
-                        onChange={set("confirmPassword")}
-                        error={errors.confirmPassword}
-                    />
+                {/* Password + Confirm — single column on mobile */}
+                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+                    <PasswordField label="Password" placeholder="Min. 8 chars" value={form.password} onChange={set("password")} error={errors.password} />
+                    <PasswordField label="Confirm" placeholder="••••••••" value={form.confirmPassword} onChange={set("confirmPassword")} error={errors.confirmPassword} />
                 </div>
 
                 <div style={{ marginBottom: 18 }}>
-                    <label style={{
-                        display: "flex", alignItems: "flex-start", gap: 10,
-                        cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
-                    }}>
+                    <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
                         <input
                             type="checkbox"
                             checked={form.agreeToTerms}
                             onChange={set("agreeToTerms")}
-                            style={{
-                                marginTop: 3, accentColor: C.blush,
-                                width: 15, height: 15, cursor: "pointer", flexShrink: 0,
-                            }}
+                            style={{ marginTop: 3, accentColor: C.blush, width: 15, height: 15, cursor: "pointer", flexShrink: 0 }}
                         />
                         <span style={{ fontSize: "0.77rem", color: "rgba(26,15,10,0.52)", lineHeight: 1.5 }}>
                             I agree to the{" "}
-                            <a href="/terms" className="sb-link" style={{ color: C.blush, textDecoration: "none" }}>
-                                Terms of Service
-                            </a>{" "}
+                            <a href="/terms" className="sb-link" style={{ color: C.blush, textDecoration: "none" }}>Terms of Service</a>{" "}
                             and{" "}
-                            <a href="/privacy" className="sb-link" style={{ color: C.blush, textDecoration: "none" }}>
-                                Privacy Policy
-                            </a>
+                            <a href="/privacy" className="sb-link" style={{ color: C.blush, textDecoration: "none" }}>Privacy Policy</a>
                         </span>
                     </label>
                     {errors.agreeToTerms && (
-                        <p style={{
-                            fontSize: "0.71rem", color: "#c0392b",
-                            marginTop: 4, fontFamily: "'DM Sans',sans-serif",
-                        }}>
+                        <p style={{ fontSize: "0.71rem", color: "#c0392b", marginTop: 4, fontFamily: "'DM Sans',sans-serif" }}>
                             {errors.agreeToTerms}
                         </p>
                     )}
@@ -337,10 +261,7 @@ export default function RegisterPage({ onLoginSuccess }) {
                     Create Account
                 </PrimaryBtn>
 
-                <p style={{
-                    textAlign: "center", marginTop: 20, fontSize: "0.84rem",
-                    color: "rgba(26,15,10,0.46)", fontFamily: "'DM Sans',sans-serif",
-                }}>
+                <p style={{ textAlign: "center", marginTop: 20, fontSize: "0.84rem", color: "rgba(26,15,10,0.46)", fontFamily: "'DM Sans',sans-serif" }}>
                     Already have an account?{" "}
                     <span
                         onClick={() => navigate('/login')}

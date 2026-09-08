@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { C } from "../constants";
-import API from '../services/api'
+import API from '../services/api';
 import axios from "axios";
 import {
     useGlobalStyles,
@@ -14,13 +14,24 @@ import {
     GoogleBtn,
 } from "../components/SharedComponents";
 
+/* ── tiny hook ── */
+const useBreakpoint = () => {
+    const [w, setW] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
+    useEffect(() => {
+        const fn = () => setW(window.innerWidth);
+        window.addEventListener("resize", fn);
+        return () => window.removeEventListener("resize", fn);
+    }, []);
+    return { isMobile: w < 768 };
+};
+
 export default function LoginPage({ setUser }) {
-    // ...
     const [form, setForm] = useState({ email: "", password: "" });
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-
+    const navigate = useNavigate();
+    const { isMobile } = useBreakpoint();
 
     const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
     const validate = () => {
@@ -32,18 +43,13 @@ export default function LoginPage({ setUser }) {
     };
 
     const handleSubmit = async () => {
-        
         const errs = validate();
         if (Object.keys(errs).length) { setErrors(errs); return; }
-
         setErrors({});
         setLoading(true);
-
         try {
-           const res = await API.post("/login", { email: form.email, password: form.password });
-
+            const res = await API.post("/login", { email: form.email, password: form.password });
             console.log("LOGIN RESPONSE:", res.data);
-
             if (res.data.token) {
                 const userData = {
                     _id: res.data._id,
@@ -51,17 +57,13 @@ export default function LoginPage({ setUser }) {
                     email: res.data.email,
                     admin: res.data.admin,
                 };
-
                 localStorage.setItem("token", res.data.token);
                 localStorage.setItem("user", JSON.stringify(userData));
-
-                // FIX: Single navigation based on admin status (removed duplicate navigate)
-                setUser(userData);    
-                navigate(res.data.admin === true ? '/admin' : '/');     
+                setUser(userData);
+                navigate(res.data.admin === true ? '/admin' : '/');
             } else {
                 setErrors({ email: res.data.message || "Invalid email or password" });
             }
-
         } catch (err) {
             console.log("LOGIN ERROR:", err.response?.data);
             setErrors({ email: err.response?.data?.message || "Server error" });
@@ -69,19 +71,18 @@ export default function LoginPage({ setUser }) {
             setLoading(false);
         }
     };
-            const navigate = useNavigate()
 
     return (
-        <div
-            style={{
-                display: "flex",
-                minHeight: "100vh",
-                fontFamily: "'DM Sans',sans-serif",
-                background: C.dark,
-                overflow: "hidden",
-            }}
-        >
-            <BrandPanel />
+        <div style={{
+            display: "flex",
+            minHeight: "100vh",
+            fontFamily: "'DM Sans',sans-serif",
+            background: C.dark,
+            overflow: "hidden",
+        }}>
+            {/* BrandPanel hidden on mobile */}
+            {!isMobile && <BrandPanel />}
+
             <FormPanel>
                 <FormHeading
                     title="Welcome back"
@@ -113,7 +114,7 @@ export default function LoginPage({ setUser }) {
                                 background: "transparent",
                                 cursor: "pointer",
                                 fontSize: "0.8rem",
-                                color: "#666"
+                                color: "#666",
                             }}
                         >
                             {showPassword ? "Hide" : "Show"}
@@ -125,12 +126,7 @@ export default function LoginPage({ setUser }) {
                     <a
                         href="/forgot-password"
                         className="sb-link"
-                        style={{
-                            fontSize: "0.77rem",
-                            color: C.blush,
-                            textDecoration: "none",
-                            fontFamily: "'DM Sans',sans-serif",
-                        }}
+                        style={{ fontSize: "0.77rem", color: C.blush, textDecoration: "none", fontFamily: "'DM Sans',sans-serif" }}
                     >
                         Forgot password?
                     </a>
@@ -143,15 +139,13 @@ export default function LoginPage({ setUser }) {
                 <OrDivider />
                 <GoogleBtn />
 
-                <p
-                    style={{
-                        textAlign: "center",
-                        marginTop: 22,
-                        fontSize: "0.84rem",
-                        color: "rgba(26,15,10,0.46)",
-                        fontFamily: "'DM Sans',sans-serif",
-                    }}
-                >
+                <p style={{
+                    textAlign: "center",
+                    marginTop: 22,
+                    fontSize: "0.84rem",
+                    color: "rgba(26,15,10,0.46)",
+                    fontFamily: "'DM Sans',sans-serif",
+                }}>
                     Don't have an account?{" "}
                     <span
                         onClick={() => navigate('/register')}

@@ -9,8 +9,8 @@ const NavLink = ({ label, active, onClick }) => {
   const isActive = active || hovered;
 
   const location = useLocation();
-const isAdmin = location.pathname.startsWith('/admin');
-if (isAdmin) return null;
+  const isAdmin = location.pathname.startsWith('/admin');
+  if (isAdmin) return null;
 
   return (
     <button
@@ -49,15 +49,13 @@ if (isAdmin) return null;
   );
 };
 
-// PROFILE ICON 
+// PROFILE ICON
 const ProfileIcon = ({ user, onLogout }) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
   return (
     <div style={{ position: "relative" }}>
-
-      {/* Avatar circle */}
       <button
         onClick={() => setOpen((v) => !v)}
         style={{
@@ -73,7 +71,6 @@ const ProfileIcon = ({ user, onLogout }) => {
           flexShrink: 0,
         }}
       >
-
         {user?.name ? (
           <span style={{
             fontFamily: fonts.sans,
@@ -93,16 +90,9 @@ const ProfileIcon = ({ user, onLogout }) => {
         )}
       </button>
 
-      {/* Dropdown */}
       {open && (
         <>
-          <div
-            onClick={() => setOpen(false)}
-            style={{
-              position: "fixed", inset: 0, zIndex: 299,
-            }}
-          />
-
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 299 }} />
           <div style={{
             position: "absolute",
             top: "calc(100% + 10px)",
@@ -114,8 +104,6 @@ const ProfileIcon = ({ user, onLogout }) => {
             boxShadow: "0 8px 24px rgba(0,0,0,0.10)",
             animation: "navDropFade 0.18s ease",
           }}>
-
-            {/* User name */}
             {user?.name && (
               <div style={{
                 padding: "12px 18px 8px",
@@ -129,7 +117,6 @@ const ProfileIcon = ({ user, onLogout }) => {
               </div>
             )}
 
-            {/* Admin Panel — only for admin users */}
             {user?.admin === true && (
               <button
                 onClick={() => { navigate('/admin'); setOpen(false); }}
@@ -157,7 +144,6 @@ const ProfileIcon = ({ user, onLogout }) => {
               </button>
             )}
 
-            {/* Logout */}
             <button
               onClick={() => { onLogout(); setOpen(false); }}
               style={{
@@ -179,7 +165,6 @@ const ProfileIcon = ({ user, onLogout }) => {
               onMouseEnter={(e) => e.currentTarget.style.background = "#faf7f3"}
               onMouseLeave={(e) => e.currentTarget.style.background = "none"}
             >
-              {/* Logout icon */}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke={colors.muted}
                   strokeWidth="1.8" strokeLinecap="round" />
@@ -198,13 +183,14 @@ const ProfileIcon = ({ user, onLogout }) => {
 };
 
 
-const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
+const Nav = ({ scrolled, user = null, onLogout = () => { } }) => {
   const [reserveHovered, setReserveHovered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navPages = ["home", "menu", "order", "reservation"];
   const navigate = useNavigate();
   const location = useLocation();
+
   return (
     <>
       <style>{`
@@ -212,34 +198,47 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
           from { opacity: 0; transform: translateY(-6px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        @media (max-width: 768px) {
-          .sb-center-nav { display: none !important; }
-          .sb-reserve-btn { display: none !important; }
-          .sb-hamburger { display: flex !important; }
+        @keyframes mobileMenuSlide {
+          from { opacity: 0; transform: translateY(-8px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
+        /* hide center nav + reserve btn on mobile */
+        @media (max-width: 768px) {
+          .sb-center-nav  { display: none !important; }
+          .sb-reserve-btn { display: none !important; }
+          .sb-hamburger   { display: flex !important; }
+        }
+        /* hide hamburger on desktop */
         @media (min-width: 769px) {
-          .sb-hamburger { display: none !important; }
-          .sb-mobile-menu { display: none !important; }
+          .sb-hamburger    { display: none !important; }
+          .sb-mobile-menu  { display: none !important; }
+        }
+        /* reduce nav padding on small screens */
+        @media (max-width: 480px) {
+          .sb-nav-inner { padding: 0 20px !important; }
         }
       `}</style>
 
-      <nav style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 200,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 56px",
-        height: scrolled ? "64px" : "72px",
-        background: "rgba(255,255,255,0.92)",
-        backdropFilter: "blur(12px)",
-        borderBottom: scrolled ? `1px solid ${colors.line || "#e8e2d9"}` : "1px solid transparent",
-        transition: "height 0.3s, border-color 0.4s",
-      }}>
-
+      <nav
+        className="sb-nav-inner"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 200,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 56px",
+          height: scrolled ? "64px" : "72px",
+          background: "rgba(255,255,255,0.92)",
+          backdropFilter: "blur(12px)",
+          borderBottom: scrolled ? `1px solid ${colors.line || "#e8e2d9"}` : "1px solid transparent",
+          transition: "height 0.3s, border-color 0.4s",
+        }}
+      >
+        {/* Logo */}
         <div
           onClick={() => navigate('/home')}
           style={{ display: "flex", flexDirection: "column", gap: "2px", cursor: "pointer" }}
@@ -264,6 +263,7 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
           </span>
         </div>
 
+        {/* Center nav links — desktop only */}
         <div className="sb-center-nav" style={{
           display: "flex",
           position: "absolute",
@@ -272,7 +272,6 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
         }}>
           {navPages.map((p) => {
             const path = p === "home" ? "/" : `/${p}`;
-
             return (
               <NavLink
                 key={p}
@@ -284,9 +283,8 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
           })}
         </div>
 
-
+        {/* Right side */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-
           <button
             className="sb-reserve-btn"
             onClick={() => navigate('/reservation')}
@@ -339,11 +337,12 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
             </button>
           )}
 
+          {/* Hamburger — mobile only */}
           <button
             className="sb-hamburger"
             onClick={() => setMenuOpen((v) => !v)}
             style={{
-              display: "none",
+              display: "none",          /* overridden to flex by media query */
               flexDirection: "column",
               gap: 5,
               background: "none",
@@ -370,6 +369,7 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
         </div>
       </nav>
 
+      {/* Mobile drawer */}
       <div
         className="sb-mobile-menu"
         style={{
@@ -384,19 +384,16 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
           display: menuOpen ? "flex" : "none",
           flexDirection: "column",
           padding: "16px 0 24px",
+          animation: menuOpen ? "mobileMenuSlide 0.2s ease" : "none",
         }}
       >
         {navPages.map((p) => {
           const path = p === "home" ? "/" : `/${p}`;
           const isActive = location.pathname === path;
-
           return (
             <button
               key={p}
-              onClick={() => {
-                navigate(path);
-                setMenuOpen(false);
-              }}
+              onClick={() => { navigate(path); setMenuOpen(false); }}
               style={{
                 padding: "14px 32px",
                 background: isActive ? "#faf7f3" : "none",
@@ -416,8 +413,6 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
         })}
 
         <div style={{ borderTop: `1px solid ${colors.line || "#e8e2d9"}`, margin: "12px 0 0" }}>
-
-          {/* Admin Panel link in mobile menu */}
           {user?.admin === true && (
             <button
               onClick={() => { navigate('/admin'); setMenuOpen(false); }}
@@ -440,10 +435,7 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
           )}
 
           <button
-            onClick={() => {
-              navigate("/reservation");
-              setMenuOpen(false);
-            }}
+            onClick={() => { navigate("/reservation"); setMenuOpen(false); }}
             style={{
               padding: "14px 32px",
               background: "none",
@@ -463,11 +455,7 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
 
           {user ? (
             <button
-              onClick={() => {
-                onLogout();
-                navigate("/");
-                setMenuOpen(false);
-              }}
+              onClick={() => { onLogout(); navigate("/"); setMenuOpen(false); }}
               style={{
                 padding: "14px 32px",
                 background: "none",
@@ -486,10 +474,7 @@ const Nav = ({  scrolled, user = null, onLogout = () => { } }) => {
             </button>
           ) : (
             <button
-              onClick={() => {
-                navigate("/login");
-                setMenuOpen(false);
-              }}
+              onClick={() => { navigate("/login"); setMenuOpen(false); }}
               style={{
                 padding: "14px 32px",
                 background: "none",

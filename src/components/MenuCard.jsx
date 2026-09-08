@@ -14,38 +14,38 @@ const MenuCard = ({ item }) => {
       onMouseLeave={() => setHovered(false)}
       style={{
         background: hovered ? colors.off : colors.white,
-        padding: "28px 32px",
+        padding: "clamp(16px, 3vw, 28px) clamp(16px, 3vw, 32px)", // ← fluid padding
         cursor: "pointer",
-        margin: "5px",
         transition: "background 0.2s",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          marginBottom: "8px",
-        }}
-      >
-        <span
-          style={{
-            fontFamily: fonts.serif,
-            fontSize: "1rem",
-            color: colors.ink,
-          }}
-        >
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        gap: "12px",                    // ← gap so they don't collide
+        marginBottom: "8px",
+        flexWrap: "nowrap",
+      }}>
+        <span style={{
+          fontFamily: fonts.serif,
+          fontSize: "1rem",
+          color: colors.ink,
+          minWidth: 0,                  // ← allow title to shrink
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}>
           {item.title}
         </span>
-        <span
-          style={{
-            fontFamily: fonts.sans,
-            fontSize: "0.85rem",
-            fontWeight: 500,
-            color: colors.accent,
-            whiteSpace: "nowrap",
-          }}
-        >
+        <span style={{
+          fontFamily: fonts.sans,
+          fontSize: "0.85rem",
+          fontWeight: 500,
+          color: colors.accent,
+          whiteSpace: "nowrap",
+          flexShrink: 0,               // ← price never shrinks
+        }}>
           ₹{item.price}
         </span>
       </div>
@@ -53,7 +53,7 @@ const MenuCard = ({ item }) => {
       {isImage(item.imageUrl) && !imgError ? (
         <div style={{
           width: "100%",
-          height: "200px",
+          height: "clamp(160px, 25vw, 200px)", // ← responsive image height
           borderRadius: "8px",
           overflow: "hidden",
           marginBottom: "12px",
@@ -62,18 +62,13 @@ const MenuCard = ({ item }) => {
             src={item.imageUrl}
             alt={item.title}
             onError={() => setImgError(true)}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
         </div>
       ) : (
         <div style={{
           width: "100%",
-          height: "200px",
+          height: "clamp(160px, 25vw, 200px)",
           borderRadius: "8px",
           marginBottom: "12px",
           background: "#f5f5f5",
@@ -86,15 +81,13 @@ const MenuCard = ({ item }) => {
         </div>
       )}
 
-      <p
-        style={{
-          fontFamily: fonts.sans,
-          fontSize: "0.82rem",
-          color: colors.muted,
-          lineHeight: 1.65,
-          margin: 0,
-        }}
-      >
+      <p style={{
+        fontFamily: fonts.sans,
+        fontSize: "0.82rem",
+        color: colors.muted,
+        lineHeight: 1.65,
+        margin: 0,
+      }}>
         {item.description}
       </p>
     </div>

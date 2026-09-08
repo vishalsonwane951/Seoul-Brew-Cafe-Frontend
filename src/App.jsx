@@ -14,6 +14,7 @@ import MenuPage from "./pages/MenuPage";
 import OrderPage from "./pages/OrderPage";
 import ReservationPage from "./pages/Reservation";
 
+
 // Admin Pages
 import AdminLayout from "./Admin/components/AdminLayout";
 import Overview from "./Admin/pages/Overview";
@@ -27,6 +28,8 @@ import Reviews from "./Admin/pages/Reviews";
 import Settings from "./Admin/pages/Settings";
 import SustainifyOM from "./pages/Sustainify";
 import Sustainify from "./pages/SEPL";
+import BlogPage from "./pages/BlogPage";
+import AdminBlogManager from "./Admin/pages/AdminBlogManager";
 
 // ── Admin guard — blocks non-admin users from /admin routes ──────────────────
 function ProtectedRoute({ children }) {
@@ -121,8 +124,9 @@ function AppContent() {
           <Route path="/reservation" element={<ReservationPage />} />
           <Route path="/login" element={<LoginPage setUser={setUser} />} />
           <Route path="/register" element={<RegisterPage setUser={setUser} />} />
-          <Route path="/sustainify" element={<SustainifyOM/>}/>
-          <Route path  ='/sepl' element={<Sustainify/>}/>
+          <Route path="/sustainify" element={<SustainifyOM />} />
+          <Route path='/sepl' element={<Sustainify />} />
+          <Route path="/blogs" element={<BlogPage />} />
 
           {/* ── ADMIN PORTAL ── */}
           <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
@@ -135,6 +139,8 @@ function AppContent() {
             <Route path="analytics" element={<Analytics />} />
             <Route path="reviews" element={<Reviews />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="blogs" element={<AdminBlogManager />} />
+
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

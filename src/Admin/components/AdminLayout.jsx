@@ -11,6 +11,7 @@ const NAV = [
       { to: '/admin', label: 'Overview', icon: '⊞', end: true },
       { to: '/admin/orders', label: 'Orders', icon: '📋', badge: 'orders' },
       { to: '/admin/menu', label: 'Menu', icon: '☕' },
+      { to: '/admin/blogs', label: 'Blogs', icon: '☕' },
       { to: '/admin/reservations', label: 'Reservations', icon: '📅', badge: 'reservations' },
     ]
   },
@@ -34,11 +35,13 @@ const PAGE_CFG = {
   '/admin/orders': { title: 'Orders' },
   '/admin/menu': { title: 'Menu Management' },
   '/admin/reservations': { title: 'Reservations' },
+  '/admin/blogs': { title: 'Blogs' },
   '/admin/staff': { title: 'Staff' },
   '/admin/inventory': { title: 'Inventory' },
   '/admin/analytics': { title: 'Analytics' },
   '/admin/reviews': { title: 'Reviews' },
   '/admin/settings': { title: 'Settings' },
+  
 };
 
 export default function AdminLayout() {
