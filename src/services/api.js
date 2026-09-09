@@ -3,9 +3,9 @@ import axios from "axios";
 const API_URL = "https://seoul-brew-cafe-backend-1.onrender.com/api";
 
 const API = axios.create({
-  baseURL: API_URL,
+  baseURL: "https://seoul-brew-cafe-backend-1.onrender.com/api",
 });
-
+console.log("🚀 API BASE URL:", API.defaults.baseURL);
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
