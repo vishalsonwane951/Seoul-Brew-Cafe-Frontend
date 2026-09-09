@@ -34,36 +34,47 @@ const ImageUpload = ({ value, onChange }) => {
   const [uploading, setUploading] = useState(false);
 
   const handleFile = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Image must be under 5MB");
-      return;
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  if (file.size > 5 * 1024 * 1024) {
+    alert("Image must be under 5MB");
+    return;
+  }
+
+  setUploading(true);
+
+  try {
+    const res = await API.get(
+      `/s3/presign?type=${encodeURIComponent(file.type)}`
+    );
+
+    const { url, publicUrl } = res.data;
+
+    const uploadRes = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type,
+      },
+      body: file,
+    });
+
+    if (!uploadRes.ok) {
+      throw new Error(`Upload failed: ${uploadRes.status}`);
     }
 
-    setUploading(true);
-    try {
-      const res = await API.get(`/s3/presign?type=${encodeURIComponent(file.type)}`);
-      const { url, publicUrl } = res.data;
+    // Force HTTPS
+    const securePublicUrl = publicUrl.replace(/^http:\/\//, "https://");
 
-      const uploadRes = await fetch(url, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-
-      if (!uploadRes.ok) throw new Error(`Upload failed: ${uploadRes.status}`);
-
-      // Force https
-      onChange(publicUrl.replace(/^http:\/\//, "https://"));
-
-    } catch (err) {
-      console.error(err);
-      alert("Image upload failed. Please try again.");
-    } finally {
-      setUploading(false);
-    }
-  };
+    onChange(securePublicUrl);
+  } catch (err) {
+    console.error("Image upload error:", err);
+    alert("Image upload failed. Please try again.");
+  } finally {
+    setUploading(false);
+  }
+};
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

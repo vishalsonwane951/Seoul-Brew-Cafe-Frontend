@@ -1,7 +1,6 @@
 import axios from "axios";
 
 const VITE_API_URL = 'https://seoul-brew-cafe-backend-1.onrender.com/api'
-// const VITE_API_URL = 'http://localhost:5000/api'
 
 const API = axios.create({        
   baseURL: VITE_API_URL,
