@@ -3,7 +3,7 @@ import { colors, fonts } from "../tokens";
 import Eyebrow from "../components/Eyebrow";
 import API from '../services/api.js'
 
-const Field = ({ label, children }) => (
+const Field = ({ label, children, error }) => (
   <div style={{ marginBottom: "20px" }}>
     <label style={{
       display: "block",
@@ -18,14 +18,25 @@ const Field = ({ label, children }) => (
       {label}
     </label>
     {children}
+    {error && (
+      <div style={{
+        fontFamily: fonts.sans,
+        fontSize: "0.72rem",
+        color: "#c0392b",
+        marginTop: "6px",
+        fontWeight: 400
+      }}>
+        {error}
+      </div>
+    )}
   </div>
 );
 
 //  Input Styles 
-const inputStyle = (focused) => ({
+const inputStyle = (focused, hasError) => ({
   width: "100%", padding: "13px 14px",
   background: focused ? colors.white : colors.off,
-  border: `1px solid ${focused ? colors.ink : colors.line}`,
+  border: `1px solid ${hasError ? "#c0392b" : focused ? colors.ink : colors.line}`,
   borderRadius: 0,
   color: colors.ink, fontFamily: fonts.sans,
   fontSize: "0.88rem", fontWeight: 300,
@@ -35,7 +46,7 @@ const inputStyle = (focused) => ({
 });
 
 //  Form Inputs 
-const FormInput = ({ name, type = "text", placeholder, value, onChange, required }) => {
+const FormInput = ({ name, type = "text", placeholder, value, onChange, onBlur, required, error }) => {
   const [focused, setFocused] = useState(false);
   return (
     <input
@@ -46,13 +57,13 @@ const FormInput = ({ name, type = "text", placeholder, value, onChange, required
       onChange={onChange}
       required={required}
       onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      style={inputStyle(focused)}
+      onBlur={(e) => { setFocused(false); onBlur && onBlur(e); }}
+      style={inputStyle(focused, !!error)}
     />
   );
 };
 
-const FormSelect = ({ name, value, onChange, required, children }) => {
+const FormSelect = ({ name, value, onChange, onBlur, required, error, children }) => {
   const [focused, setFocused] = useState(false);
   return (
     <select
@@ -61,22 +72,103 @@ const FormSelect = ({ name, value, onChange, required, children }) => {
       onChange={onChange}
       required={required}
       onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      style={{ ...inputStyle(focused), cursor: "pointer" }}
+      onBlur={(e) => { setFocused(false); onBlur && onBlur(e); }}
+      style={{ ...inputStyle(focused, !!error), cursor: "pointer" }}
     >
       {children}
     </select>
   );
 };
 
+//  Validation helpers 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^[+]?[\d\s()-]{7,15}$/;
+
+const validateField = (name, value) => {
+  switch (name) {
+    case "name":
+      if (!value.trim()) return "Please enter your full name.";
+      if (value.trim().length < 2) return "Name looks too short.";
+      return "";
+    case "email":
+      if (!value.trim()) return "Please enter your email address.";
+      if (!EMAIL_RE.test(value.trim())) return "Please enter a valid email address.";
+      return "";
+    case "phone":
+      if (value.trim() && !PHONE_RE.test(value.trim())) return "Please enter a valid phone number.";
+      return "";
+    case "date": {
+      if (!value) return "Please select a date.";
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const picked = new Date(value);
+      if (picked < today) return "Please pick a date from today onward.";
+      return "";
+    }
+    case "time":
+      if (!value) return "Please select a preferred time.";
+      return "";
+    default:
+      return "";
+  }
+};
+
+const REQUIRED_FIELDS = ["name", "email", "date", "time"];
+
+const FIELD_LABELS = {
+  name: "Name",
+  customerName: "Name",
+  email: "Email",
+  phone: "Phone",
+  date: "Date",
+  time: "Time",
+  guests: "Guests",
+  notes: "Special requests",
+  specialRequest: "Special requests",
+  table: "Table",
+};
+
+// Turns backend errors (Mongoose validation strings or a structured
+// { errors: { field: msg } } object) into a short "Field is required." message.
+const getFriendlyServerError = (err) => {
+  const data = err?.response?.data;
+
+  // Structured field errors, e.g. { errors: { phone: "..." } }
+  if (data?.errors && typeof data.errors === "object") {
+    const field = Object.keys(data.errors)[0];
+    if (field) return `${FIELD_LABELS[field] || field} is required.`;
+  }
+
+  const msg = data?.message || err?.message || "";
+
+  // Mongoose style: "...validation failed: phone: Path `phone` is required."
+  const pathMatch = msg.match(/Path `(\w+)` is required/i);
+  if (pathMatch) {
+    const field = pathMatch[1];
+    return `${FIELD_LABELS[field] || field} is required.`;
+  }
+
+  // Generic "<field> is required" or "<field>: required"
+  const genericMatch = msg.match(/^(\w+)\s*[:\-]?\s*is required/i) || msg.match(/(\w+)\s*[:\-]\s*required/i);
+  if (genericMatch) {
+    const field = genericMatch[1];
+    return `${FIELD_LABELS[field] || field} is required.`;
+  }
+
+  return "Please fill in all required fields.";
+};
+
 //  Reservation Page 
 const ReservationPage = () => {
   const [form, setForm] = useState({ name: "", email: "", phone: "", date: "", time: "", guests: "2", notes: "" });
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [done, setDone] = useState(false);
   const [resId, setResId] = useState(null);
   const [info, setInfo] = useState(null);
   const [loadingInfo, setLoadingInfo] = useState(true);
-
+  const [submitError, setSubmitError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   //  Fetch Café Info 
   useEffect(() => {
@@ -94,33 +186,73 @@ const ReservationPage = () => {
     fetchInfo();
   }, []);
 
-  const handleChange = (e) => setForm(v => ({ ...v, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(v => ({ ...v, [name]: value }));
+    // Live-clear/update error for fields the user has already touched
+    if (touched[name]) {
+      setErrors(prev => ({ ...prev, [name]: validateField(name, value) }));
+    }
+  };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const payload = {
-      customerName: form.name,
-      email: form.email,
-      phone: form.phone,
-      date: form.date,
-      time: form.time,
-      guests: form.guests,
-      specialRequest: form.notes, // ✅ removed duplicate `notes` key
-      table: '-',                 // ✅ customer doesn't pick table, admin assigns it
-    };
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    setErrors(prev => ({ ...prev, [name]: validateField(name, value) }));
+  };
 
-    const res = await API.post("/reservations", payload);
-    setResId(res.data.reservation._id); // ✅ was res.data.id, now matches your response shape
-    setDone(true);
-  } catch (err) {
-    console.error("Reservation failed:", err);
-    alert("Failed to place reservation.");
-  }
-};
+  const validateAll = () => {
+    const nextErrors = {};
+    Object.keys(form).forEach((key) => {
+      const err = validateField(key, form[key]);
+      if (err) nextErrors[key] = err;
+    });
+    setErrors(nextErrors);
+    setTouched({ name: true, email: true, phone: true, date: true, time: true, guests: true, notes: true });
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const isFormValid = REQUIRED_FIELDS.every((key) => !validateField(key, form[key]))
+    && !validateField("phone", form.phone); // phone optional but must be valid if filled
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitError("");
+
+    if (!validateAll()) {
+      setSubmitError("Please fix the highlighted fields before submitting.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const payload = {
+        customerName: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        date: form.date,
+        time: form.time,
+        guests: form.guests,
+        specialRequest: form.notes.trim(),
+        table: '-', // customer doesn't pick table, admin assigns it
+      };
+
+      const res = await API.post("/reservations", payload);
+      setResId(res.data?.reservation?._id ?? null);
+      setDone(true);
+    } catch (err) {
+      console.error("Reservation failed:", err);
+      setSubmitError(getFriendlyServerError(err));
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const resetForm = () => {
     setForm({ name: "", email: "", phone: "", date: "", time: "", guests: "2", notes: "" });
+    setErrors({});
+    setTouched({});
+    setSubmitError("");
     setDone(false);
     setResId(null);
   };
@@ -142,7 +274,7 @@ const ReservationPage = () => {
           </h2>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "80px", alignItems: "start" }}>
-            {/* ── Form Column ── */}
+            {/* Form Column */}
             <div>
               {done ? (
                 <div style={{ textAlign: "center", padding: "64px 40px" }}>
@@ -163,19 +295,57 @@ const ReservationPage = () => {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
+                  {submitError && (
+                    <div style={{
+                      background: "#fdecea",
+                      border: "1px solid #c0392b",
+                      color: "#c0392b",
+                      padding: "12px 16px",
+                      marginBottom: "20px",
+                      fontFamily: fonts.sans,
+                      fontSize: "0.82rem",
+                    }}>
+                      {submitError}
+                    </div>
+                  )}
+
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                    <Field label="Full Name">
-                      <FormInput name="name" placeholder="Kim Ji-ho" value={form.name} onChange={handleChange} required />
+                    <Field label="Full Name *" error={touched.name && errors.name}>
+                      <FormInput
+                        name="name"
+                        placeholder="Kim Ji-ho"
+                        value={form.name}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        required
+                        error={touched.name && errors.name}
+                      />
                     </Field>
-                    <Field label="Email Address">
-                      <FormInput name="email" type="email" placeholder="you@email.com" value={form.email} onChange={handleChange} required />
+                    <Field label="Email Address *" error={touched.email && errors.email}>
+                      <FormInput
+                        name="email"
+                        type="email"
+                        placeholder="you@email.com"
+                        value={form.email}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        required
+                        error={touched.email && errors.email}
+                      />
                     </Field>
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                    <Field label="Phone">
-                      <FormInput name="phone" placeholder="+91 98765 43210" value={form.phone} onChange={handleChange} />
+                    <Field label="Phone" error={touched.phone && errors.phone}>
+                      <FormInput
+                        name="phone"
+                        placeholder="+91 98765 43210"
+                        value={form.phone}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={touched.phone && errors.phone}
+                      />
                     </Field>
                     <Field label="No. of Guests">
                       <FormSelect name="guests" value={form.guests} onChange={handleChange}>
@@ -185,11 +355,26 @@ const ReservationPage = () => {
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                    <Field label="Date">
-                      <FormInput name="date" type="date" value={form.date} onChange={handleChange} required />
+                    <Field label="Date *" error={touched.date && errors.date}>
+                      <FormInput
+                        name="date"
+                        type="date"
+                        value={form.date}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        required
+                        error={touched.date && errors.date}
+                      />
                     </Field>
-                    <Field label="Preferred Time">
-                      <FormSelect name="time" value={form.time} onChange={handleChange} required>
+                    <Field label="Preferred Time *" error={touched.time && errors.time}>
+                      <FormSelect
+                        name="time"
+                        value={form.time}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        required
+                        error={touched.time && errors.time}
+                      >
                         <option value="">Select time</option>
                         {["8:00 AM","9:00 AM","10:00 AM","11:00 AM","12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM","5:00 PM","6:00 PM","7:00 PM","8:00 PM"].map(t => <option key={t} value={t}>{t}</option>)}
                       </FormSelect>
@@ -197,17 +382,34 @@ const ReservationPage = () => {
                   </div>
 
                   <Field label="Special Requests">
-                    <textarea name="notes" placeholder="Dietary needs, celebrations…" value={form.notes} onChange={handleChange} style={{ ...inputStyle(false), minHeight: "90px" }} />
+                    <textarea
+                      name="notes"
+                      placeholder="Dietary needs, celebrations…"
+                      value={form.notes}
+                      onChange={handleChange}
+                      style={{ ...inputStyle(false, false), minHeight: "90px" }}
+                    />
                   </Field>
 
-                  <button type="submit" style={{ width: "100%", padding: "15px", background: colors.ink, color: "#fff", border: "none", cursor: "pointer" }}>
-                    Confirm Reservation
+                  <button
+                    type="submit"
+                    disabled={submitting || !isFormValid}
+                    style={{
+                      width: "100%",
+                      padding: "15px",
+                      background: (submitting || !isFormValid) ? colors.muted : colors.ink,
+                      color: "#fff",
+                      border: "none",
+                      cursor: (submitting || !isFormValid) ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {submitting ? "Submitting…" : "Confirm Reservation"}
                   </button>
                 </form>
               )}
             </div>
 
-            {/*  Info Column  */}
+            {/* Info Column */}
             <div>
               <div style={{ border:"1px solid #ccc", padding:"14px 20px", marginBottom:"16px", background: colors.off }}>
                 <h4 style={{ fontFamily: fonts.sans, fontSize:"0.68rem", letterSpacing:"3px", textTransform:"uppercase", color: colors.muted }}>Opening Hours</h4>
