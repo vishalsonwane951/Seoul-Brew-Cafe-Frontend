@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { colors, fonts } from "../tokens";
 import Eyebrow from "../components/Eyebrow";
 import API from '../services/api.js'
+// ⚠️ Adjust this path if your AuthContext file lives somewhere else.
+import { useAuth } from "../context/AuthContext";
 
 const Field = ({ label, children, error }) => (
   <div style={{ marginBottom: "20px" }}>
@@ -155,11 +157,48 @@ const getFriendlyServerError = (err) => {
     return `${FIELD_LABELS[field] || field} is required.`;
   }
 
+  // Auth failure surfaced by the backend (token expired / missing, etc.)
+  if (err?.response?.status === 401) {
+    return "Your session has expired. Please log in again.";
+  }
+
   return "Please fill in all required fields.";
 };
 
+//  Login Prompt (shown instead of the form when not authenticated) 
+const LoginPrompt = () => (
+  <div style={{ textAlign: "center", padding: "64px 40px", border: `1px solid ${colors.line}`, background: colors.off }}>
+    <div style={{ fontSize: "2.4rem", marginBottom: "16px" }}>🔒</div>
+    <h3 style={{ fontFamily: fonts.serif, fontSize: "1.4rem", fontWeight: 400, color: colors.ink, marginBottom: "10px" }}>
+      Please Log In
+    </h3>
+    <p style={{ fontFamily: fonts.sans, fontSize: "0.88rem", color: colors.muted, lineHeight: 1.7, fontWeight: 300, marginBottom: "28px" }}>
+      You'll need an account to reserve a table.
+    </p>
+    <a
+      href="/login"
+      style={{
+        display: "inline-block",
+        padding: "15px 36px",
+        background: colors.ink,
+        color: "#fff",
+        textDecoration: "none",
+        fontFamily: fonts.sans,
+        fontSize: "0.82rem",
+        letterSpacing: "1px",
+        textTransform: "uppercase",
+      }}
+    >
+      Log In
+    </a>
+  </div>
+);
+
 //  Reservation Page 
 const ReservationPage = () => {
+  const { user, token, loading: authLoading } = useAuth();
+  const isAuthenticated = !!user && !!token;
+
   const [form, setForm] = useState({ name: "", email: "", phone: "", date: "", time: "", guests: "2", notes: "" });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -169,6 +208,18 @@ const ReservationPage = () => {
   const [loadingInfo, setLoadingInfo] = useState(true);
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  // Pre-fill name/email from the logged-in user once available.
+  useEffect(() => {
+    if (user) {
+      setForm(v => ({
+        ...v,
+        name: v.name || user.name || "",
+        email: v.email || user.email || "",
+      }));
+    }
+  }, [user]);
 
   //  Fetch Café Info 
   useEffect(() => {
@@ -219,6 +270,14 @@ const ReservationPage = () => {
     e.preventDefault();
     setSubmitError("");
 
+    if (!isAuthenticated) {
+      setShowLoginPrompt(true);
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1500);
+      return;
+    }
+
     if (!validateAll()) {
       setSubmitError("Please fix the highlighted fields before submitting.");
       return;
@@ -237,7 +296,11 @@ const ReservationPage = () => {
         table: '-', // customer doesn't pick table, admin assigns it
       };
 
-      const res = await API.post("/reservations", payload);
+      // Sends the token explicitly in case your API instance doesn't already
+      // attach it via an interceptor. Safe to leave even if it does.
+      const res = await API.post("/reservations", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setResId(res.data?.reservation?._id ?? null);
       setDone(true);
     } catch (err) {
@@ -249,7 +312,7 @@ const ReservationPage = () => {
   };
 
   const resetForm = () => {
-    setForm({ name: "", email: "", phone: "", date: "", time: "", guests: "2", notes: "" });
+    setForm({ name: user?.name || "", email: user?.email || "", phone: "", date: "", time: "", guests: "2", notes: "" });
     setErrors({});
     setTouched({});
     setSubmitError("");
@@ -276,7 +339,11 @@ const ReservationPage = () => {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "80px", alignItems: "start" }}>
             {/* Form Column */}
             <div>
-              {done ? (
+              {authLoading ? (
+                <p style={{ fontFamily: fonts.sans, color: colors.muted }}>Checking your session…</p>
+              ) : showLoginPrompt ? (
+                <LoginPrompt />
+              ) : done ? (
                 <div style={{ textAlign: "center", padding: "64px 40px" }}>
                   <div style={{ fontSize: "3rem", marginBottom: "20px" }}>✓</div>
                   <h3 style={{ fontFamily: fonts.serif, fontSize: "1.6rem", fontWeight: 400, color: colors.ink, marginBottom: "12px" }}>
